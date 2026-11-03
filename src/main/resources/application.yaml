@@ -1,3 +1,15 @@
 spring:
   application:
     name: football-predictions
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  threads:
+    virtual:
+      enabled: true
+
+app:
+  groups:
+    max-members: 50
+    max-owned-per-user: 10
