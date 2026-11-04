@@ -3,6 +3,7 @@ package com.raulcedroj.football_predictions.common;
 import com.raulcedroj.football_predictions.auth.exception.EmailAlreadyRegisteredException;
 import com.raulcedroj.football_predictions.auth.exception.InvalidCredentialsException;
 import com.raulcedroj.football_predictions.common.exception.BusinessRuleException;
+import com.raulcedroj.football_predictions.common.exception.ForbiddenException;
 import com.raulcedroj.football_predictions.common.exception.NotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -38,6 +39,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     public ProblemDetail handleBusinessRule(BusinessRuleException ex) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
         problem.setTitle("Business rule violated");
+        return problem;
+    }
+
+    @ExceptionHandler(ForbiddenException.class)
+    public ProblemDetail handleForbidden(ForbiddenException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, ex.getMessage());
+        problem.setTitle("Forbidden");
         return problem;
     }
 }

@@ -91,4 +91,27 @@ public abstract class IntegrationTestSupport {
                         { "homeGoals": %d, "awayGoals": %d }
                         """.formatted(home, away)));
     }
+
+    protected Long currentSeasonId() {
+        return jdbcTemplate.queryForObject(
+                "SELECT id FROM season WHERE name = '2026/27'", Long.class);
+    }
+
+    protected ResultActions createGroup(String token, String name) throws Exception {
+        return mockMvc.perform(post("/api/groups")
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        { "name": "%s", "seasonId": %d }
+                        """.formatted(name, currentSeasonId())));
+    }
+
+    protected ResultActions join(String token, String inviteCode) throws Exception {
+        return mockMvc.perform(post("/api/groups/join")
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        { "inviteCode": "%s" }
+                        """.formatted(inviteCode)));
+    }
 }
