@@ -23,6 +23,10 @@ public class UserEntity {
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private Role role = Role.USER;
+
     protected UserEntity() {
     }
 
@@ -38,4 +42,5 @@ public class UserEntity {
     public String getDisplayName() { return displayName; }
     public String getPasswordHash() { return passwordHash; }
     public Instant getCreatedAt() { return createdAt; }
+    public Role getRole() { return role; }
 }

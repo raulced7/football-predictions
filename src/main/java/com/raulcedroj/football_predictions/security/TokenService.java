@@ -5,6 +5,7 @@ import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.*;
 import org.springframework.stereotype.Service;
 import java.time.Instant;
+import java.util.List;
 
 @Service
 public class TokenService {
@@ -25,6 +26,7 @@ public class TokenService {
                 .expiresAt(now.plus(properties.expiration()))
                 .subject(String.valueOf(userEntity.getId()))
                 .claim("name", userEntity.getDisplayName())
+                .claim("roles", List.of(userEntity.getRole().name()))
                 .build();
 
         JwsHeader header = JwsHeader.with(MacAlgorithm.HS256).build();
