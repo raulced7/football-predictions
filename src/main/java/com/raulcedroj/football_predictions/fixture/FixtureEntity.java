@@ -73,6 +73,11 @@ public class FixtureEntity {
         this.status = FixtureStatus.FINISHED;
     }
 
+    public boolean isOpenForPredictions(Instant now) {
+        return (status == FixtureStatus.SCHEDULED || status == FixtureStatus.POSTPONED)
+                && now.isBefore(kickoffAt);
+    }
+
     public Long getId() { return id; }
     public RoundEntity getRound() { return round; }
     public RoundEntity getScoringRound() { return scoringRound; }
