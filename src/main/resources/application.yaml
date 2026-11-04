@@ -5,6 +5,11 @@ spring:
     hibernate:
       ddl-auto: validate
     open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 50
+        order_updates: true
   threads:
     virtual:
       enabled: true

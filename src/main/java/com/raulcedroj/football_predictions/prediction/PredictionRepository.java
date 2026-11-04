@@ -27,4 +27,6 @@ public interface PredictionRepository extends JpaRepository<PredictionEntity, Lo
     Optional<PredictionEntity> findByUserIdAndFixtureId(Long userId, Long fixtureId);
 
     List<PredictionEntity> findByUserIdAndFixtureIdIn(Long userId, Collection<Long> fixtureIds);
+
+    List<PredictionEntity> findByFixtureId(Long fixtureId);
 }

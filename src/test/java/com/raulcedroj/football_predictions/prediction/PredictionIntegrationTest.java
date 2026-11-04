@@ -2,13 +2,13 @@ package com.raulcedroj.football_predictions.prediction;
 
 import com.raulcedroj.football_predictions.support.IntegrationTestSupport;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.MediaType;
+
 import java.time.Duration;
 import java.time.Instant;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class PredictionIntegrationTest extends IntegrationTestSupport {
 
@@ -69,15 +69,5 @@ class PredictionIntegrationTest extends IntegrationTestSupport {
     void returnsNotFoundForUnknownFixture() throws Exception {
         String user = tokenFor("user-pred-4@example.com", false);
         predict(user, 999999, 1, 0).andExpect(status().isNotFound());
-    }
-
-    private org.springframework.test.web.servlet.ResultActions predict(
-            String token, Integer fixtureId, int home, int away) throws Exception {
-        return mockMvc.perform(put("/api/fixtures/{id}/prediction", fixtureId)
-                .header("Authorization", "Bearer " + token)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                        { "homeGoals": %d, "awayGoals": %d }
-                        """.formatted(home, away)));
     }
 }

@@ -41,6 +41,10 @@ public class PredictionEntity {
     protected PredictionEntity() {
     }
 
+    public void assignPoints(int points) {
+        this.points = points;
+    }
+
     public Long getId() { return id; }
     public Long getUserId() { return userId; }
     public FixtureEntity getFixture() { return fixture; }

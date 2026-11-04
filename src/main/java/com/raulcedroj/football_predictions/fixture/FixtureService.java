@@ -7,6 +7,7 @@ import com.raulcedroj.football_predictions.competition.RoundRepository;
 import com.raulcedroj.football_predictions.fixture.dto.CreateFixtureRequest;
 import com.raulcedroj.football_predictions.fixture.dto.FixtureResponse;
 import com.raulcedroj.football_predictions.fixture.dto.SetResultRequest;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
@@ -16,10 +17,12 @@ public class FixtureService {
 
     private final FixtureRepository fixtureRepository;
     private final RoundRepository roundRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
-    public FixtureService(FixtureRepository fixtureRepository, RoundRepository roundRepository) {
+    public FixtureService(FixtureRepository fixtureRepository, RoundRepository roundRepository, ApplicationEventPublisher eventPublisher) {
         this.fixtureRepository = fixtureRepository;
         this.roundRepository = roundRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
@@ -43,6 +46,9 @@ public class FixtureService {
                 .orElseThrow(() -> new NotFoundException("No existe el partido " + fixtureId));
 
         fixture.finish(request.homeGoals(), request.awayGoals());
+        eventPublisher.publishEvent(
+                new FixtureFinishedEvent(fixture.getId(), request.homeGoals(), request.awayGoals()));
+
         return FixtureResponse.from(fixture);
     }
 

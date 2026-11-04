@@ -9,10 +9,13 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
+
 import java.time.Instant;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -69,5 +72,23 @@ public abstract class IntegrationTestSupport {
                 .andReturn().getResponse().getContentAsString();
 
         return JsonPath.read(response, "$.id");
+    }
+
+    protected ResultActions predict(String token, Integer fixtureId, int home, int away) throws Exception {
+        return mockMvc.perform(put("/api/fixtures/{id}/prediction", fixtureId)
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        { "homeGoals": %d, "awayGoals": %d }
+                        """.formatted(home, away)));
+    }
+
+    protected ResultActions setResult(String adminToken, Integer fixtureId, int home, int away) throws Exception {
+        return mockMvc.perform(put("/api/admin/fixtures/{id}/result", fixtureId)
+                .header("Authorization", "Bearer " + adminToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        { "homeGoals": %d, "awayGoals": %d }
+                        """.formatted(home, away)));
     }
 }
