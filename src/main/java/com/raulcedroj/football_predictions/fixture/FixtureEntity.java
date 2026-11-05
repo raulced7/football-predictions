@@ -65,12 +65,51 @@ public class FixtureEntity {
     }
 
     public void finish(int homeGoals, int awayGoals) {
-        if (status == FixtureStatus.CANCELLED) {
-            throw new BusinessRuleException("No se puede poner resultado a un partido cancelado");
+        if (status == FixtureStatus.CANCELLED || status == FixtureStatus.POSTPONED) {
+            throw new BusinessRuleException(
+                    "No se puede poner resultado a un partido " + status.name().toLowerCase());
         }
         this.homeGoals = homeGoals;
         this.awayGoals = awayGoals;
         this.status = FixtureStatus.FINISHED;
+    }
+
+    public void postpone() {
+        if (status != FixtureStatus.SCHEDULED) {
+            throw new BusinessRuleException("Solo se puede aplazar un partido programado");
+        }
+        this.status = FixtureStatus.POSTPONED;
+    }
+
+    public void reschedule(Instant newKickoff, boolean confirmed, RoundEntity newScoringRound) {
+        if (status != FixtureStatus.SCHEDULED && status != FixtureStatus.POSTPONED
+                && status != FixtureStatus.SUSPENDED) {
+            throw new BusinessRuleException("No se puede cambiar la fecha de un partido " + status.name().toLowerCase());
+        }
+        this.kickoffAt = newKickoff;
+        this.kickoffConfirmed = confirmed;
+        this.scoringRound = newScoringRound;
+        if (status == FixtureStatus.POSTPONED) {
+            this.status = FixtureStatus.SCHEDULED;
+        }
+    }
+
+    public void suspend(Instant now) {
+        boolean started = status == FixtureStatus.LIVE
+                || (status == FixtureStatus.SCHEDULED && !now.isBefore(kickoffAt));
+        if (!started) {
+            throw new BusinessRuleException("Solo se puede suspender un partido que ya ha empezado; si no, aplázalo");
+        }
+        this.status = FixtureStatus.SUSPENDED;
+    }
+
+    public void cancel() {
+        if (status == FixtureStatus.CANCELLED) {
+            throw new BusinessRuleException("El partido ya está cancelado");
+        }
+        this.status = FixtureStatus.CANCELLED;
+        this.homeGoals = null;
+        this.awayGoals = null;
     }
 
     public boolean isOpenForPredictions(Instant now) {

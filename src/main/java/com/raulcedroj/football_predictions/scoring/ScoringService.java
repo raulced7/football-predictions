@@ -1,5 +1,6 @@
 package com.raulcedroj.football_predictions.scoring;
 
+import com.raulcedroj.football_predictions.fixture.FixtureCancelledEvent;
 import com.raulcedroj.football_predictions.fixture.FixtureFinishedEvent;
 import com.raulcedroj.football_predictions.prediction.PredictionEntity;
 import com.raulcedroj.football_predictions.prediction.PredictionRepository;
@@ -33,5 +34,11 @@ public class ScoringService {
         }
 
         log.info("Scored {} predictions for fixture {}", predictions.size(), event.fixtureId());
+    }
+
+    @EventListener
+    public void onFixtureCancelled(FixtureCancelledEvent event) {
+        int cleared = predictionRepository.clearPoints(event.fixtureId());
+        log.info("Cleared points of {} predictions for cancelled fixture {}", cleared, event.fixtureId());
     }
 }

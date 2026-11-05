@@ -29,4 +29,8 @@ public interface PredictionRepository extends JpaRepository<PredictionEntity, Lo
     List<PredictionEntity> findByUserIdAndFixtureIdIn(Long userId, Collection<Long> fixtureIds);
 
     List<PredictionEntity> findByFixtureId(Long fixtureId);
+
+    @Modifying
+    @Query("UPDATE PredictionEntity p SET p.points = NULL WHERE p.fixture.id = :fixtureId")
+    int clearPoints(@Param("fixtureId") Long fixtureId);
 }

@@ -6,10 +6,14 @@ import com.raulcedroj.football_predictions.competition.RoundEntity;
 import com.raulcedroj.football_predictions.competition.RoundRepository;
 import com.raulcedroj.football_predictions.fixture.dto.CreateFixtureRequest;
 import com.raulcedroj.football_predictions.fixture.dto.FixtureResponse;
+import com.raulcedroj.football_predictions.fixture.dto.ScheduleFixtureRequest;
 import com.raulcedroj.football_predictions.fixture.dto.SetResultRequest;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.Clock;
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -18,11 +22,14 @@ public class FixtureService {
     private final FixtureRepository fixtureRepository;
     private final RoundRepository roundRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final Clock clock;
 
-    public FixtureService(FixtureRepository fixtureRepository, RoundRepository roundRepository, ApplicationEventPublisher eventPublisher) {
+    public FixtureService(FixtureRepository fixtureRepository, RoundRepository roundRepository, ApplicationEventPublisher eventPublisher,
+                          Clock clock) {
         this.fixtureRepository = fixtureRepository;
         this.roundRepository = roundRepository;
         this.eventPublisher = eventPublisher;
+        this.clock = clock;
     }
 
     @Transactional
@@ -42,8 +49,7 @@ public class FixtureService {
 
     @Transactional
     public FixtureResponse setResult(Long fixtureId, SetResultRequest request) {
-        FixtureEntity fixture = fixtureRepository.findById(fixtureId)
-                .orElseThrow(() -> new NotFoundException("No existe el partido " + fixtureId));
+        FixtureEntity fixture = getFixture(fixtureId);
 
         fixture.finish(request.homeGoals(), request.awayGoals());
         eventPublisher.publishEvent(
@@ -60,5 +66,49 @@ public class FixtureService {
         return fixtureRepository.findByScoringRoundIdOrderByKickoffAtAsc(roundId).stream()
                 .map(FixtureResponse::from)
                 .toList();
+    }
+
+    @Transactional
+    public FixtureResponse postpone(Long fixtureId) {
+        FixtureEntity fixture = getFixture(fixtureId);
+        fixture.postpone();
+        return FixtureResponse.from(fixture);
+    }
+
+    @Transactional
+    public FixtureResponse reschedule(Long fixtureId, ScheduleFixtureRequest request) {
+        FixtureEntity fixture = getFixture(fixtureId);
+        RoundEntity officialRound = fixture.getRound();
+
+        Long scoringRoundId = fixtureRepository.findScoringRoundIdFor(
+                        fixture.getId(),
+                        officialRound.getSeason().getId(),
+                        officialRound.getSequence(),
+                        request.kickoffAt())
+                .orElse(officialRound.getId());
+
+        fixture.reschedule(request.kickoffAt(), request.kickoffConfirmed(),
+                roundRepository.getReferenceById(scoringRoundId));
+        return FixtureResponse.from(fixture);
+    }
+
+    @Transactional
+    public FixtureResponse suspend(Long fixtureId) {
+        FixtureEntity fixture = getFixture(fixtureId);
+        fixture.suspend(Instant.now(clock));
+        return FixtureResponse.from(fixture);
+    }
+
+    @Transactional
+    public FixtureResponse cancel(Long fixtureId) {
+        FixtureEntity fixture = getFixture(fixtureId);
+        fixture.cancel();
+        eventPublisher.publishEvent(new FixtureCancelledEvent(fixture.getId()));
+        return FixtureResponse.from(fixture);
+    }
+
+    private FixtureEntity getFixture(Long fixtureId) {
+        return fixtureRepository.findById(fixtureId)
+                .orElseThrow(() -> new NotFoundException("No existe el partido " + fixtureId));
     }
 }
