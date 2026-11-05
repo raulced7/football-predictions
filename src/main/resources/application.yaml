@@ -24,3 +24,7 @@ app:
     issuer: football-predictions
   football-data:
     token: ${FOOTBALL_DATA_TOKEN:}
+  sync:
+    enabled: true
+    calendar-cron: "0 30 4 * * *"
+    live-check-interval: PT5M

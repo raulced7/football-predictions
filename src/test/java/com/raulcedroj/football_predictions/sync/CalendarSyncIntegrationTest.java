@@ -112,4 +112,52 @@ class CalendarSyncIntegrationTest extends IntegrationTestSupport {
                 WHERE u.email = ? AND f.external_id = ?
                 """, Integer.class, email, externalId);
     }
+
+    @Test
+    void movesSeasonThroughItsStatusesAsMatchesArePlayed() throws Exception {
+        String admin = tokenFor("sync-admin-season@example.com", true);
+        Long seasonId = createTestSeason();
+        Instant kickoff = Instant.parse("2030-08-17T18:00:00Z");
+
+        when(provider.fetchMatches("TST", "2030")).thenReturn(List.of(
+                testMatch("tst-1", kickoff, FixtureStatus.SCHEDULED, null, null),
+                testMatch("tst-2", kickoff, FixtureStatus.SCHEDULED, null, null)));
+        syncTestSeason(admin, seasonId).andExpect(jsonPath("$.seasonStatus").value("UPCOMING"));
+
+        when(provider.fetchMatches("TST", "2030")).thenReturn(List.of(
+                testMatch("tst-1", kickoff, FixtureStatus.FINISHED, 1, 0),
+                testMatch("tst-2", kickoff, FixtureStatus.LIVE, null, null)));
+        syncTestSeason(admin, seasonId).andExpect(jsonPath("$.seasonStatus").value("IN_PROGRESS"));
+
+        when(provider.fetchMatches("TST", "2030")).thenReturn(List.of(
+                testMatch("tst-1", kickoff, FixtureStatus.FINISHED, 1, 0),
+                testMatch("tst-2", kickoff, FixtureStatus.FINISHED, 2, 2)));
+        syncTestSeason(admin, seasonId).andExpect(jsonPath("$.seasonStatus").value("FINISHED"));
+    }
+
+    private Long createTestSeason() {
+        jdbcTemplate.update("INSERT INTO competition (code, name, external_id) VALUES ('TEST', 'Test League', 'TST')");
+        Long seasonId = jdbcTemplate.queryForObject("""
+                INSERT INTO season (competition_id, name, start_date, end_date, status, external_id)
+                SELECT id, '2030/31', DATE '2030-08-01', DATE '2031-05-31', 'UPCOMING', '2030'
+                FROM competition WHERE code = 'TEST'
+                RETURNING id
+                """, Long.class);
+        jdbcTemplate.update("""
+                INSERT INTO round (season_id, sequence, name)
+                SELECT ?, n, 'Jornada ' || n FROM generate_series(1, 2) AS n
+                """, seasonId);
+        return seasonId;
+    }
+
+    private ResultActions syncTestSeason(String adminToken, Long seasonId) throws Exception {
+        return mockMvc.perform(post("/api/admin/sync/seasons/{id}", seasonId)
+                        .header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isOk());
+    }
+
+    private static ExternalMatch testMatch(String id, Instant kickoff, FixtureStatus status,
+                                           Integer home, Integer away) {
+        return new ExternalMatch(id, 1, kickoff, true, status, "Local " + id, "Visitante " + id, home, away);
+    }
 }

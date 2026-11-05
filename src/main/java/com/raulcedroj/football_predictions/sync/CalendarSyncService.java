@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 
 @Service
 public class CalendarSyncService {
@@ -19,6 +20,7 @@ public class CalendarSyncService {
     private final SeasonRepository seasonRepository;
     private final FootballDataProvider provider;
     private final FixtureSyncWriter writer;
+    private final ReentrantLock lock = new ReentrantLock();
 
     public CalendarSyncService(SeasonRepository seasonRepository, FootballDataProvider provider,
                                FixtureSyncWriter writer) {
@@ -28,18 +30,27 @@ public class CalendarSyncService {
     }
 
     public SyncReport syncSeason(Long seasonId) {
-        SeasonEntity season = seasonRepository.findWithCompetitionById(seasonId)
-                .orElseThrow(() -> new NotFoundException("No existe la temporada " + seasonId));
-
-        String competitionId = season.getCompetition().getExternalId();
-        if (competitionId == null || season.getExternalId() == null) {
-            throw new BusinessRuleException("La temporada no está vinculada al proveedor de datos");
+        if (!lock.tryLock()) {
+            throw new BusinessRuleException("Ya hay una sincronización en curso; inténtalo en unos minutos");
         }
+        try {
+            SeasonEntity season = seasonRepository.findWithCompetitionById(seasonId)
+                    .orElseThrow(() -> new NotFoundException("No existe la temporada " + seasonId));
 
-        List<ExternalMatch> matches = provider.fetchMatches(competitionId, season.getExternalId());
-        SyncReport report = writer.apply(seasonId, matches);
+            String competitionId = season.getCompetition().getExternalId();
+            if (competitionId == null || season.getExternalId() == null) {
+                throw new BusinessRuleException("La temporada no está vinculada al proveedor de datos");
+            }
 
-        log.info("Season {} synced: {}", seasonId, report);
-        return report;
+            List<ExternalMatch> matches = provider.fetchMatches(competitionId, season.getExternalId());
+            SyncReport report = writer.apply(seasonId, matches);
+
+            log.info("Season {} synced: {}", seasonId, report);
+            return report;
+        } finally {
+            lock.unlock();
+        }
     }
+
+
 }

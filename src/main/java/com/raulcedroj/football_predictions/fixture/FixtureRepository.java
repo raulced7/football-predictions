@@ -31,4 +31,13 @@ public interface FixtureRepository extends JpaRepository<FixtureEntity, Long> {
 
     @EntityGraph(attributePaths = "round")
     List<FixtureEntity> findByExternalIdIn(Collection<String> externalIds);
+
+    long countByRoundSeasonId(Long seasonId);
+
+    long countByRoundSeasonIdAndStatusNotIn(Long seasonId, Collection<FixtureStatus> statuses);
+
+    boolean existsByRoundSeasonIdAndStatusIn(Long seasonId, Collection<FixtureStatus> statuses);
+
+    boolean existsByRoundSeasonIdAndStatusInAndKickoffAtBetweenAndExternalIdIsNotNull(
+            Long seasonId, Collection<FixtureStatus> statuses, Instant from, Instant to);
 }

@@ -34,6 +34,16 @@ public class SeasonEntity {
     protected SeasonEntity() {
     }
 
+    public void markInProgress() {
+        if (status == SeasonStatus.UPCOMING) {
+            this.status = SeasonStatus.IN_PROGRESS;
+        }
+    }
+
+    public void markFinished() {
+        this.status = SeasonStatus.FINISHED;
+    }
+
     public Long getId() { return id; }
     public CompetitionEntity getCompetition() { return competition; }
     public String getName() { return name; }

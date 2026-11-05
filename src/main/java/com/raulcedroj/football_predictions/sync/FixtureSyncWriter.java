@@ -1,8 +1,7 @@
 package com.raulcedroj.football_predictions.sync;
 
 import com.raulcedroj.football_predictions.common.exception.BusinessRuleException;
-import com.raulcedroj.football_predictions.competition.RoundEntity;
-import com.raulcedroj.football_predictions.competition.RoundRepository;
+import com.raulcedroj.football_predictions.competition.*;
 import com.raulcedroj.football_predictions.fixture.*;
 import com.raulcedroj.football_predictions.sync.provider.ExternalMatch;
 import org.slf4j.Logger;
@@ -27,21 +26,23 @@ public class FixtureSyncWriter {
     private final ScoringRoundResolver scoringRoundResolver;
     private final ApplicationEventPublisher events;
     private final Clock clock;
+    private final SeasonRepository seasonRepository;
 
     public FixtureSyncWriter(FixtureRepository fixtureRepository, RoundRepository roundRepository,
                              ScoringRoundResolver scoringRoundResolver, ApplicationEventPublisher events,
-                             Clock clock) {
+                             Clock clock, SeasonRepository seasonRepository) {
         this.fixtureRepository = fixtureRepository;
         this.roundRepository = roundRepository;
         this.scoringRoundResolver = scoringRoundResolver;
         this.events = events;
         this.clock = clock;
+        this.seasonRepository = seasonRepository;
     }
 
     @Transactional
     public SyncReport apply(Long seasonId, List<ExternalMatch> matches) {
         if (matches.isEmpty()) {
-            return new SyncReport(0, 0, 0, 0);
+            return new SyncReport(0, 0, 0, 0, updateSeasonStatus(seasonId));
         }
 
         Map<Integer, RoundEntity> roundsBySequence = roundRepository.findBySeasonIdOrderBySequenceAsc(seasonId)
@@ -79,7 +80,7 @@ public class FixtureSyncWriter {
         }
 
         roundRepository.recomputeStarts(seasonId);
-        return new SyncReport(created, updated, unchanged, skipped);
+        return new SyncReport(created, updated, unchanged, skipped, updateSeasonStatus(seasonId));
     }
 
     private boolean update(FixtureEntity fixture, ExternalMatch match) {
@@ -145,5 +146,23 @@ public class FixtureSyncWriter {
             }
         }
         return false;
+    }
+
+    private SeasonStatus updateSeasonStatus(Long seasonId) {
+        SeasonEntity season = seasonRepository.findById(seasonId).orElseThrow();
+
+        boolean started = fixtureRepository.existsByRoundSeasonIdAndStatusIn(seasonId,
+                List.of(FixtureStatus.LIVE, FixtureStatus.FINISHED, FixtureStatus.SUSPENDED));
+        if (started) {
+            season.markInProgress();
+        }
+
+        long total = fixtureRepository.countByRoundSeasonId(seasonId);
+        long pending = fixtureRepository.countByRoundSeasonIdAndStatusNotIn(seasonId,
+                List.of(FixtureStatus.FINISHED, FixtureStatus.CANCELLED));
+        if (season.getStatus() == SeasonStatus.IN_PROGRESS && total > 0 && pending == 0) {
+            season.markFinished();
+        }
+        return season.getStatus();
     }
 }
