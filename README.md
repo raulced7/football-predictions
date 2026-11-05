@@ -1,6 +1,6 @@
 # Football Predictions
 
-![CI](https://github.com/YOUR_GITHUB_USER/football-predictions/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/raulced7/football-predictions/actions/workflows/ci.yml/badge.svg)
 ![Java](https://img.shields.io/badge/Java-25-orange)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4-6DB33F)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18-336791)
@@ -156,7 +156,7 @@ Errors follow RFC 9457 (`ProblemDetail`): `400` validation, `401` missing or inv
 ### Run
 
 ```bash
-git clone https://github.com/YOUR_GITHUB_USER/football-predictions.git
+git clone https://github.com/raulced7/football-predictions.git
 cd football-predictions
 ./mvnw spring-boot:run        # Windows: .\mvnw.cmd spring-boot:run
 ```
