@@ -17,18 +17,14 @@ public interface FixtureRepository extends JpaRepository<FixtureEntity, Long> {
     @Query(value = """
             SELECT r.id
             FROM round r
-            JOIN fixture f ON f.round_id = r.id
-                          AND f.status NOT IN ('POSTPONED', 'CANCELLED')
-                          AND f.id <> :fixtureId
             WHERE r.season_id = :seasonId
               AND r.sequence >= :officialSequence
-            GROUP BY r.id, r.sequence
-            HAVING MIN(f.kickoff_at) <= :kickoffAt
+              AND r.starts_at IS NOT NULL
+              AND r.starts_at <= :kickoffAt
             ORDER BY r.sequence DESC
             LIMIT 1
             """, nativeQuery = true)
-    Optional<Long> findScoringRoundIdFor(@Param("fixtureId") Long fixtureId,
-                                         @Param("seasonId") Long seasonId,
+    Optional<Long> findScoringRoundIdFor(@Param("seasonId") Long seasonId,
                                          @Param("officialSequence") int officialSequence,
                                          @Param("kickoffAt") Instant kickoffAt);
 }

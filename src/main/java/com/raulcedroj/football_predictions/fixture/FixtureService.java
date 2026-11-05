@@ -44,6 +44,8 @@ public class FixtureService {
                 request.homeTeam().trim(), request.awayTeam().trim(),
                 request.kickoffAt(), request.kickoffConfirmed()));
 
+        roundRepository.recomputeStarts(round.getSeason().getId());
+
         return FixtureResponse.from(fixture);
     }
 
@@ -79,16 +81,16 @@ public class FixtureService {
     public FixtureResponse reschedule(Long fixtureId, ScheduleFixtureRequest request) {
         FixtureEntity fixture = getFixture(fixtureId);
         RoundEntity officialRound = fixture.getRound();
+        Long seasonId = officialRound.getSeason().getId();
 
         Long scoringRoundId = fixtureRepository.findScoringRoundIdFor(
-                        fixture.getId(),
-                        officialRound.getSeason().getId(),
-                        officialRound.getSequence(),
-                        request.kickoffAt())
+                        seasonId, officialRound.getSequence(), request.kickoffAt())
                 .orElse(officialRound.getId());
 
         fixture.reschedule(request.kickoffAt(), request.kickoffConfirmed(),
                 roundRepository.getReferenceById(scoringRoundId));
+
+        roundRepository.recomputeStarts(seasonId);
         return FixtureResponse.from(fixture);
     }
 

@@ -2,6 +2,8 @@ package com.raulcedroj.football_predictions.competition;
 
 import jakarta.persistence.*;
 
+import java.time.Instant;
+
 @Entity
 @Table(name = "round")
 public class RoundEntity {
@@ -19,6 +21,11 @@ public class RoundEntity {
 
     @Column(nullable = false, length = 50)
     private String name;
+
+    @Column(name = "starts_at")
+    private Instant startsAt;
+
+    public Instant getStartsAt() { return startsAt; }
 
     protected RoundEntity() {
     }
