@@ -78,6 +78,14 @@ public class FixtureEntity {
                 && now.isBefore(kickoffAt);
     }
 
+    public boolean hasStarted(Instant now) {
+        return switch (status) {
+            case LIVE, FINISHED, SUSPENDED -> true;
+            case SCHEDULED -> !now.isBefore(kickoffAt);
+            case POSTPONED, CANCELLED -> false;
+        };
+    }
+
     public Long getId() { return id; }
     public RoundEntity getRound() { return round; }
     public RoundEntity getScoringRound() { return scoringRound; }

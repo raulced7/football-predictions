@@ -10,12 +10,11 @@ import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-
 import java.time.Instant;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -28,12 +27,16 @@ public abstract class IntegrationTestSupport {
     @Autowired
     protected JdbcTemplate jdbcTemplate;
 
+    // ---------- Usuarios ----------
+
     protected String tokenFor(String email, boolean admin) throws Exception {
+        String displayName = email.substring(0, email.indexOf('@'));   // ← EL CAMBIO: "std-alice@example.com" → "std-alice"
+
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                { "email": "%s", "displayName": "Test", "password": "password123" }
-                                """.formatted(email)))
+                                { "email": "%s", "displayName": "%s", "password": "password123" }
+                                """.formatted(email, displayName)))
                 .andExpect(status().isCreated());
 
         if (admin) {
@@ -51,6 +54,13 @@ public abstract class IntegrationTestSupport {
         return JsonPath.read(response, "$.accessToken");
     }
 
+    // ---------- Temporadas y jornadas ----------
+
+    protected Long currentSeasonId() {
+        return jdbcTemplate.queryForObject(
+                "SELECT id FROM season WHERE name = '2026/27'", Long.class);
+    }
+
     protected Long roundId(int sequence) {
         return jdbcTemplate.queryForObject("""
                 SELECT r.id FROM round r
@@ -58,6 +68,8 @@ public abstract class IntegrationTestSupport {
                 WHERE s.name = '2026/27' AND r.sequence = ?
                 """, Long.class, sequence);
     }
+
+    // ---------- Partidos ----------
 
     protected Integer createFixture(String adminToken, Long roundId, String home, String away,
                                     Instant kickoffAt) throws Exception {
@@ -74,15 +86,6 @@ public abstract class IntegrationTestSupport {
         return JsonPath.read(response, "$.id");
     }
 
-    protected ResultActions predict(String token, Integer fixtureId, int home, int away) throws Exception {
-        return mockMvc.perform(put("/api/fixtures/{id}/prediction", fixtureId)
-                .header("Authorization", "Bearer " + token)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                        { "homeGoals": %d, "awayGoals": %d }
-                        """.formatted(home, away)));
-    }
-
     protected ResultActions setResult(String adminToken, Integer fixtureId, int home, int away) throws Exception {
         return mockMvc.perform(put("/api/admin/fixtures/{id}/result", fixtureId)
                 .header("Authorization", "Bearer " + adminToken)
@@ -92,10 +95,18 @@ public abstract class IntegrationTestSupport {
                         """.formatted(home, away)));
     }
 
-    protected Long currentSeasonId() {
-        return jdbcTemplate.queryForObject(
-                "SELECT id FROM season WHERE name = '2026/27'", Long.class);
+    // ---------- Pronósticos ----------
+
+    protected ResultActions predict(String token, Integer fixtureId, int home, int away) throws Exception {
+        return mockMvc.perform(put("/api/fixtures/{id}/prediction", fixtureId)
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        { "homeGoals": %d, "awayGoals": %d }
+                        """.formatted(home, away)));
     }
+
+    // ---------- Grupos ----------
 
     protected ResultActions createGroup(String token, String name) throws Exception {
         return mockMvc.perform(post("/api/groups")

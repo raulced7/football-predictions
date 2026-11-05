@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class ScoringRules {
 
-    static final int EXACT_RESULT_POINTS = 3;
+    public static final int EXACT_RESULT_POINTS = 3;
     static final int CORRECT_OUTCOME_POINTS = 1;
 
     public int points(int predictedHome, int predictedAway, int actualHome, int actualAway) {

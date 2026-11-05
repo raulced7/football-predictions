@@ -2,6 +2,7 @@ package com.raulcedroj.football_predictions.fixture;
 
 import com.jayway.jsonpath.JsonPath;
 import com.raulcedroj.football_predictions.TestcontainersConfiguration;
+import com.raulcedroj.football_predictions.support.IntegrationTestSupport;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -17,7 +18,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @Import(TestcontainersConfiguration.class)
-class FixtureIntegrationTest {
+class FixtureIntegrationTest extends IntegrationTestSupport {
 
     @Autowired
     private MockMvc mockMvc;
@@ -29,7 +30,7 @@ class FixtureIntegrationTest {
     void adminCreatesFixtureAndSetsResult() throws Exception {
         String adminToken = tokenFor("admin-fixtures@example.com", true);
         String userToken = tokenFor("user-fixtures@example.com", false);
-        Long roundId = firstRoundId();
+        Long roundId = roundId(1);
 
         String created = mockMvc.perform(post("/api/admin/fixtures")
                         .header("Authorization", "Bearer " + adminToken)
@@ -70,7 +71,7 @@ class FixtureIntegrationTest {
                         .content("""
                                 { "roundId": %d, "homeTeam": "Sevilla", "awayTeam": "Betis",
                                   "kickoffAt": "2026-08-17T19:00:00Z", "kickoffConfirmed": true }
-                                """.formatted(firstRoundId())))
+                                """.formatted(roundId(1))))
                 .andExpect(status().isForbidden());
     }
 
@@ -84,38 +85,7 @@ class FixtureIntegrationTest {
                         .content("""
                                 { "roundId": %d, "homeTeam": "Girona", "awayTeam": "girona",
                                   "kickoffAt": "2026-08-17T19:00:00Z", "kickoffConfirmed": true }
-                                """.formatted(firstRoundId())))
+                                """.formatted(roundId(1))))
                 .andExpect(status().isConflict());
-    }
-
-    private String tokenFor(String email, boolean admin) throws Exception {
-        mockMvc.perform(post("/api/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                { "email": "%s", "displayName": "Test", "password": "password123" }
-                                """.formatted(email)))
-                .andExpect(status().isCreated());
-
-        if (admin) {
-            jdbcTemplate.update("UPDATE app_user SET role = 'ADMIN' WHERE email = ?", email);
-        }
-
-        String response = mockMvc.perform(post("/api/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                { "email": "%s", "password": "password123" }
-                                """.formatted(email)))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString();
-
-        return JsonPath.read(response, "$.accessToken");
-    }
-
-    private Long firstRoundId() {
-        return jdbcTemplate.queryForObject("""
-                SELECT r.id FROM round r
-                JOIN season s ON s.id = r.season_id
-                WHERE s.name = '2026/27' AND r.sequence = 1
-                """, Long.class);
     }
 }

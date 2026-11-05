@@ -1,6 +1,7 @@
 package com.raulcedroj.football_predictions.group;
 
 import com.jayway.jsonpath.JsonPath;
+import com.raulcedroj.football_predictions.support.IntegrationTestSupport;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.TestPropertySource;
 
@@ -10,7 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         "app.groups.max-members=2",
         "app.groups.max-owned-per-user=1"
 })
-class GroupLimitsIntegrationTest extends GroupIntegrationTest {
+class GroupLimitsIntegrationTest extends IntegrationTestSupport {
 
     @Test
     void rejectsJoiningFullGroup() throws Exception {

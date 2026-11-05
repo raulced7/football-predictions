@@ -98,14 +98,14 @@ public class GroupService {
 
     @Transactional(readOnly = true)
     public GroupDetailResponse findDetail(Long userId, Long groupId) {
-        FriendGroupEntity group = findGroupForMember(groupId, userId);
+        FriendGroupEntity group = getGroupForMember(groupId, userId);
         List<GroupMemberResponse> members = memberRepository.findMembers(groupId);
         return new GroupDetailResponse(GroupResponse.from(group, members.size()), members);
     }
 
     @Transactional
     public void leave(Long userId, Long groupId) {
-        FriendGroupEntity group = findGroupForMember(groupId, userId);
+        FriendGroupEntity group = getGroupForMember(groupId, userId);
 
         if (group.isOwnedBy(userId)) {
             throw new BusinessRuleException("El dueño no puede salir del grupo; puede eliminarlo");
@@ -118,15 +118,15 @@ public class GroupService {
 
     @Transactional
     public void delete(Long userId, Long groupId) {
-        FriendGroupEntity group = findGroupForMember(groupId, userId);
+        FriendGroupEntity group = getGroupForMember(groupId, userId);
 
         if (!group.isOwnedBy(userId)) {
             throw new ForbiddenException("Solo el dueño puede eliminar el grupo");
         }
         groupRepository.delete(group);
     }
-
-    private FriendGroupEntity findGroupForMember(Long groupId, Long userId) {
+    @Transactional(readOnly = true)
+    public FriendGroupEntity getGroupForMember(Long groupId, Long userId) {
         return groupRepository.findWithSeasonById(groupId)
                 .filter(group -> memberRepository.existsByFriendGroupIdAndUserId(groupId, userId))
                 .orElseThrow(() -> new NotFoundException("No existe el grupo " + groupId));
