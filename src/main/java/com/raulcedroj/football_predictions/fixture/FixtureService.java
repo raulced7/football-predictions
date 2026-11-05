@@ -23,13 +23,15 @@ public class FixtureService {
     private final RoundRepository roundRepository;
     private final ApplicationEventPublisher eventPublisher;
     private final Clock clock;
+    private final ScoringRoundResolver scoringRoundResolver;
 
     public FixtureService(FixtureRepository fixtureRepository, RoundRepository roundRepository, ApplicationEventPublisher eventPublisher,
-                          Clock clock) {
+                          Clock clock, ScoringRoundResolver scoringRoundResolver) {
         this.fixtureRepository = fixtureRepository;
         this.roundRepository = roundRepository;
         this.eventPublisher = eventPublisher;
         this.clock = clock;
+        this.scoringRoundResolver = scoringRoundResolver;
     }
 
     @Transactional
@@ -88,7 +90,7 @@ public class FixtureService {
                 .orElse(officialRound.getId());
 
         fixture.reschedule(request.kickoffAt(), request.kickoffConfirmed(),
-                roundRepository.getReferenceById(scoringRoundId));
+                scoringRoundResolver.resolve(fixture.getRound(), request.kickoffAt()));
 
         roundRepository.recomputeStarts(seasonId);
         return FixtureResponse.from(fixture);

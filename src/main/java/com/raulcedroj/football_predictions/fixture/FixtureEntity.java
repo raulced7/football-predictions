@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import java.time.Instant;
+import java.util.Objects;
 
 @Entity
 @Table(name = "fixture")
@@ -62,6 +63,28 @@ public class FixtureEntity {
         this.kickoffAt = kickoffAt;
         this.kickoffConfirmed = kickoffConfirmed;
         this.status = FixtureStatus.SCHEDULED;
+    }
+
+    public FixtureEntity(RoundEntity round, String homeTeam, String awayTeam,
+                         Instant kickoffAt, boolean kickoffConfirmed, String externalId) {
+        this(round, homeTeam, awayTeam, kickoffAt, kickoffConfirmed);
+        this.externalId = externalId;
+    }
+
+    public void markLive() {
+        if (status != FixtureStatus.SCHEDULED && status != FixtureStatus.SUSPENDED) {
+            throw new BusinessRuleException("No se puede poner en juego un partido " + status.name().toLowerCase());
+        }
+        this.status = FixtureStatus.LIVE;
+    }
+
+    public boolean canBeRescheduled() {
+        return status == FixtureStatus.SCHEDULED || status == FixtureStatus.POSTPONED
+                || status == FixtureStatus.SUSPENDED;
+    }
+
+    public boolean hasResult(int homeGoals, int awayGoals) {
+        return Objects.equals(this.homeGoals, homeGoals) && Objects.equals(this.awayGoals, awayGoals);
     }
 
     public void finish(int homeGoals, int awayGoals) {

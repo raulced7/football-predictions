@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,4 +28,7 @@ public interface FixtureRepository extends JpaRepository<FixtureEntity, Long> {
     Optional<Long> findScoringRoundIdFor(@Param("seasonId") Long seasonId,
                                          @Param("officialSequence") int officialSequence,
                                          @Param("kickoffAt") Instant kickoffAt);
+
+    @EntityGraph(attributePaths = "round")
+    List<FixtureEntity> findByExternalIdIn(Collection<String> externalIds);
 }

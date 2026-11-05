@@ -5,6 +5,7 @@ import com.raulcedroj.football_predictions.auth.exception.InvalidCredentialsExce
 import com.raulcedroj.football_predictions.common.exception.BusinessRuleException;
 import com.raulcedroj.football_predictions.common.exception.ForbiddenException;
 import com.raulcedroj.football_predictions.common.exception.NotFoundException;
+import com.raulcedroj.football_predictions.sync.provider.ProviderUnavailableException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -46,6 +47,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     public ProblemDetail handleForbidden(ForbiddenException ex) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, ex.getMessage());
         problem.setTitle("Forbidden");
+        return problem;
+    }
+
+    @ExceptionHandler(ProviderUnavailableException.class)
+    public ProblemDetail handleProviderUnavailable(ProviderUnavailableException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.SERVICE_UNAVAILABLE, ex.getMessage());
+        problem.setTitle("External provider unavailable");
         return problem;
     }
 }
