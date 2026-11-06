@@ -1,5 +1,6 @@
 package com.raulcedroj.football_predictions.auth;
 
+import com.raulcedroj.football_predictions.auth.dto.DisplayNameAvailability;
 import com.raulcedroj.football_predictions.auth.dto.LoginRequest;
 import com.raulcedroj.football_predictions.auth.dto.RegisterRequest;
 import com.raulcedroj.football_predictions.auth.dto.TokenResponse;
@@ -31,5 +32,10 @@ public class AuthController {
     @PostMapping("/login")
     public TokenResponse login(@Valid @RequestBody LoginRequest request) {
         return authService.login(request);
+    }
+
+    @GetMapping("/display-name-availability")
+    public DisplayNameAvailability displayNameAvailability(@RequestParam String name) {
+        return new DisplayNameAvailability(authService.isDisplayNameAvailable(name));
     }
 }

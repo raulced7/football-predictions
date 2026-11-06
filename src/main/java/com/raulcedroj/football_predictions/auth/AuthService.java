@@ -1,5 +1,6 @@
 package com.raulcedroj.football_predictions.auth;
 
+import com.raulcedroj.football_predictions.auth.exception.DisplayNameTakenException;
 import com.raulcedroj.football_predictions.security.JwtProperties;
 import com.raulcedroj.football_predictions.security.TokenService;
 import com.raulcedroj.football_predictions.user.UserEntity;
@@ -34,15 +35,33 @@ public class AuthService {
     @Transactional
     public UserEntity register(RegisterRequest request) {
         String email = normalizeEmail(request.email());
+        String displayName = request.displayName().trim();
+
         if (userRepository.existsByEmail(email)) {
             throw new EmailAlreadyRegisteredException();
         }
+        if (userRepository.existsByDisplayName(displayName)) {
+            throw new DisplayNameTakenException();
+        }
         try {
-            return userRepository.saveAndFlush(new UserEntity(email, request.displayName().trim(),
+            return userRepository.saveAndFlush(new UserEntity(email, displayName,
                     passwordEncoder.encode(request.password())));
         } catch (DataIntegrityViolationException e) {
+            if (isDisplayNameConflict(e)) {
+                throw new DisplayNameTakenException();
+            }
             throw new EmailAlreadyRegisteredException();
         }
+    }
+
+    @Transactional(readOnly = true)
+    public boolean isDisplayNameAvailable(String displayName) {
+        return !userRepository.existsByDisplayName(displayName.trim());
+    }
+
+    private boolean isDisplayNameConflict(DataIntegrityViolationException e) {
+        String message = e.getMostSpecificCause().getMessage();
+        return message != null && message.contains("uq_app_user_display_name");
     }
 
     @Transactional(readOnly = true)

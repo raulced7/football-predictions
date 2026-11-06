@@ -1,5 +1,6 @@
 package com.raulcedroj.football_predictions.common;
 
+import com.raulcedroj.football_predictions.auth.exception.DisplayNameTakenException;
 import com.raulcedroj.football_predictions.auth.exception.EmailAlreadyRegisteredException;
 import com.raulcedroj.football_predictions.auth.exception.InvalidCredentialsException;
 import com.raulcedroj.football_predictions.common.exception.BusinessRuleException;
@@ -54,6 +55,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     public ProblemDetail handleProviderUnavailable(ProviderUnavailableException ex) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.SERVICE_UNAVAILABLE, ex.getMessage());
         problem.setTitle("External provider unavailable");
+        return problem;
+    }
+
+    @ExceptionHandler(DisplayNameTakenException.class)
+    public ProblemDetail handleDisplayNameTaken(DisplayNameTakenException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+        problem.setTitle("Display name already taken");
         return problem;
     }
 }

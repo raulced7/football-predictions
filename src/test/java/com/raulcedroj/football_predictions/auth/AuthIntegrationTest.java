@@ -83,4 +83,32 @@ class AuthIntegrationTest {
                 .andReturn().getResponse().getContentAsString();
         return JsonPath.read(response, "$.accessToken");
     }
+
+    @Test
+    void rejectsDuplicateDisplayNameIgnoringCase() throws Exception {
+        register("luis1@example.com", "Luis", "password123").andExpect(status().isCreated());
+
+        register("luis2@example.com", "LUIS", "password123")
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.title").value("Display name already taken"));
+    }
+
+    @Test
+    void rejectsInvalidDisplayNames() throws Exception {
+        register("short@example.com", "ab", "password123").andExpect(status().isBadRequest());
+        register("symbols@example.com", "Raúl!!", "password123").andExpect(status().isBadRequest());
+        register("edges@example.com", ".Raúl", "password123").andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void reportsDisplayNameAvailability() throws Exception {
+        register("marta@example.com", "Marta", "password123").andExpect(status().isCreated());
+
+        mockMvc.perform(get("/api/auth/display-name-availability").param("name", "marta"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.available").value(false));
+
+        mockMvc.perform(get("/api/auth/display-name-availability").param("name", "Nadie Usa Esto"))
+                .andExpect(jsonPath("$.available").value(true));
+    }
 }
