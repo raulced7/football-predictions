@@ -5,6 +5,7 @@ import com.raulcedroj.football_predictions.support.IntegrationTestSupport;
 import com.raulcedroj.football_predictions.sync.provider.ExternalMatch;
 import com.raulcedroj.football_predictions.sync.provider.FootballDataProvider;
 import com.raulcedroj.football_predictions.sync.provider.ProviderUnavailableException;
+import com.raulcedroj.football_predictions.sync.provider.ExternalTeam;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.ResultActions;
@@ -91,7 +92,7 @@ class CalendarSyncIntegrationTest extends IntegrationTestSupport {
     private static ExternalMatch match(String id, int matchday, Instant kickoff, boolean confirmed,
                                        FixtureStatus status, Integer home, Integer away) {
         return new ExternalMatch(id, matchday, kickoff, confirmed, status,
-                "Local " + id, "Visitante " + id, home, away);
+                team("Local " + id), team("Visitante " + id), home, away);
     }
 
     private Integer fixtureId(String externalId) {
@@ -158,6 +159,10 @@ class CalendarSyncIntegrationTest extends IntegrationTestSupport {
 
     private static ExternalMatch testMatch(String id, Instant kickoff, FixtureStatus status,
                                            Integer home, Integer away) {
-        return new ExternalMatch(id, 1, kickoff, true, status, "Local " + id, "Visitante " + id, home, away);
+        return new ExternalMatch(id, 1, kickoff, true, status, team("Local " + id), team("Visitante " + id), home, away);
+    }
+
+    private static ExternalTeam team(String name) {
+        return new ExternalTeam("team-" + name, name, null, null, null);
     }
 }

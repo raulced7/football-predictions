@@ -4,6 +4,7 @@ import com.raulcedroj.football_predictions.common.exception.BusinessRuleExceptio
 import com.raulcedroj.football_predictions.competition.*;
 import com.raulcedroj.football_predictions.fixture.*;
 import com.raulcedroj.football_predictions.sync.provider.ExternalMatch;
+import com.raulcedroj.football_predictions.team.TeamEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Component
 public class FixtureSyncWriter {
@@ -27,16 +29,18 @@ public class FixtureSyncWriter {
     private final ApplicationEventPublisher events;
     private final Clock clock;
     private final SeasonRepository seasonRepository;
+    private final TeamSyncWriter teamSyncWriter;
 
     public FixtureSyncWriter(FixtureRepository fixtureRepository, RoundRepository roundRepository,
                              ScoringRoundResolver scoringRoundResolver, ApplicationEventPublisher events,
-                             Clock clock, SeasonRepository seasonRepository) {
+                             Clock clock, SeasonRepository seasonRepository, TeamSyncWriter teamSyncWriter) {
         this.fixtureRepository = fixtureRepository;
         this.roundRepository = roundRepository;
         this.scoringRoundResolver = scoringRoundResolver;
         this.events = events;
         this.clock = clock;
         this.seasonRepository = seasonRepository;
+        this.teamSyncWriter = teamSyncWriter;
     }
 
     @Transactional
@@ -47,6 +51,10 @@ public class FixtureSyncWriter {
 
         Map<Integer, RoundEntity> roundsBySequence = roundRepository.findBySeasonIdOrderBySequenceAsc(seasonId)
                 .stream().collect(Collectors.toMap(RoundEntity::getSequence, Function.identity()));
+
+        Map<String, TeamEntity> teams = teamSyncWriter.sync(matches.stream()
+                .flatMap(match -> Stream.of(match.homeTeam(), match.awayTeam()))
+                .toList());
 
         Map<String, FixtureEntity> existing = fixtureRepository
                 .findByExternalIdIn(matches.stream().map(ExternalMatch::externalId).toList())
@@ -64,7 +72,8 @@ public class FixtureSyncWriter {
                         skipped++;
                         continue;
                     }
-                    fixture = fixtureRepository.save(new FixtureEntity(round, match.homeTeam(), match.awayTeam(),
+                    fixture = fixtureRepository.save(new FixtureEntity(round,
+                            teams.get(match.homeTeam().externalId()), teams.get(match.awayTeam().externalId()),
                             match.kickoffAt(), match.kickoffConfirmed(), match.externalId()));
                     applyStatus(fixture, match);
                     created++;

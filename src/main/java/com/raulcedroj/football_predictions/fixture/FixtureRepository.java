@@ -12,7 +12,7 @@ import java.util.Optional;
 
 public interface FixtureRepository extends JpaRepository<FixtureEntity, Long> {
 
-    @EntityGraph(attributePaths = {"round", "scoringRound"})
+    @EntityGraph(attributePaths = {"round", "scoringRound", "homeTeam", "awayTeam"})
     List<FixtureEntity> findByScoringRoundIdOrderByKickoffAtAsc(Long scoringRoundId);
 
     @Query(value = """

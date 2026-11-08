@@ -3,6 +3,7 @@ package com.raulcedroj.football_predictions.sync.footballdata;
 import com.raulcedroj.football_predictions.fixture.FixtureStatus;
 import com.raulcedroj.football_predictions.sync.provider.ExternalMatch;
 import com.raulcedroj.football_predictions.sync.provider.ProviderUnavailableException;
+import com.raulcedroj.football_predictions.sync.provider.ExternalTeam;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -27,20 +28,21 @@ class FootballDataOrgProviderTest {
             {
               "matches": [
                 { "id": 1001, "utcDate": "2026-08-15T17:00:00Z", "status": "FINISHED", "matchday": 1,
-                  "homeTeam": { "name": "FC Barcelona", "shortName": "Barça" },
-                  "awayTeam": { "name": "Real Madrid CF", "shortName": "Real Madrid" },
+                  "homeTeam": { "id": 81, "name": "FC Barcelona", "shortName": "Barça", "tla": "FCB",
+                                "crest": "https://crests.football-data.org/81.svg" },
+                  "awayTeam": { "id": 86, "name": "Real Madrid CF", "shortName": "Real Madrid", "tla": "RMA" },
                   "score": { "fullTime": { "home": 2, "away": 1 } } },
                 { "id": 1002, "utcDate": "2026-08-16T19:00:00Z", "status": "TIMED", "matchday": 1,
-                  "homeTeam": { "name": "Sevilla FC", "shortName": "Sevilla" },
-                  "awayTeam": { "name": "Real Betis Balompié", "shortName": "Betis" },
+                  "homeTeam": { "id": 559, "name": "Sevilla FC", "shortName": "Sevilla" },
+                  "awayTeam": { "id": 90, "name": "Real Betis Balompié", "shortName": "Betis" },
                   "score": { "fullTime": { "home": null, "away": null } } },
                 { "id": 1003, "utcDate": "2026-08-23T00:00:00Z", "status": "SCHEDULED", "matchday": 2,
-                  "homeTeam": { "name": "Valencia CF", "shortName": null },
-                  "awayTeam": { "name": "Villarreal CF", "shortName": "Villarreal" },
+                  "homeTeam": { "id": 95, "name": "Valencia CF", "shortName": null },
+                  "awayTeam": { "id": 94, "name": "Villarreal CF", "shortName": "Villarreal" },
                   "score": { "fullTime": { "home": null, "away": null } } },
                 { "id": 1004, "utcDate": "2026-08-23T18:00:00Z", "status": "SOMETHING_NEW", "matchday": 2,
-                  "homeTeam": { "name": "Girona FC", "shortName": "Girona" },
-                  "awayTeam": { "name": "RCD Mallorca", "shortName": "Mallorca" },
+                  "homeTeam": { "id": 298, "name": "Girona FC", "shortName": "Girona" },
+                  "awayTeam": { "id": 89, "name": "RCD Mallorca", "shortName": "Mallorca" },
                   "score": { "fullTime": { "home": null, "away": null } } }
               ]
             }
@@ -63,7 +65,9 @@ class FootballDataOrgProviderTest {
         ExternalMatch finished = matches.get(0);
         assertThat(finished.externalId()).isEqualTo("1001");
         assertThat(finished.status()).isEqualTo(FixtureStatus.FINISHED);
-        assertThat(finished.homeTeam()).isEqualTo("Barça");
+        assertThat(finished.homeTeam()).isEqualTo(new ExternalTeam("81", "FC Barcelona", "Barça", "FCB",
+                "https://crests.football-data.org/81.svg"));
+        assertThat(finished.awayTeam().crestUrl()).isNull();
         assertThat(finished.homeGoals()).isEqualTo(2);
         assertThat(finished.kickoffAt()).isEqualTo(Instant.parse("2026-08-15T17:00:00Z"));
 
@@ -72,7 +76,8 @@ class FootballDataOrgProviderTest {
 
         ExternalMatch provisional = matches.get(2);
         assertThat(provisional.kickoffConfirmed()).isFalse();
-        assertThat(provisional.homeTeam()).isEqualTo("Valencia CF");   // sin shortName, usa name
+        assertThat(provisional.homeTeam().name()).isEqualTo("Valencia CF");
+        assertThat(provisional.homeTeam().shortName()).isNull();
 
         server.verify();
     }

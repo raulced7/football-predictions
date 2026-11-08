@@ -2,6 +2,8 @@ package com.raulcedroj.football_predictions.fixture.dto;
 
 import com.raulcedroj.football_predictions.fixture.FixtureEntity;
 import com.raulcedroj.football_predictions.fixture.FixtureStatus;
+import com.raulcedroj.football_predictions.team.dto.TeamResponse;
+
 import java.time.Instant;
 
 public record FixtureResponse(
@@ -9,8 +11,8 @@ public record FixtureResponse(
         Long roundId,
         String roundName,
         Long scoringRoundId,
-        String homeTeam,
-        String awayTeam,
+        TeamResponse homeTeam,
+        TeamResponse awayTeam,
         Instant kickoffAt,
         boolean kickoffConfirmed,
         FixtureStatus status,
@@ -23,8 +25,8 @@ public record FixtureResponse(
                 fixture.getRound().getId(),
                 fixture.getRound().getName(),
                 fixture.getScoringRound().getId(),
-                fixture.getHomeTeam(),
-                fixture.getAwayTeam(),
+                TeamResponse.from(fixture.getHomeTeam()),
+                TeamResponse.from(fixture.getAwayTeam()),
                 fixture.getKickoffAt(),
                 fixture.isKickoffConfirmed(),
                 fixture.getStatus(),

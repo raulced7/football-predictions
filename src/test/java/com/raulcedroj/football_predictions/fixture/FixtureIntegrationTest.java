@@ -48,7 +48,7 @@ class FixtureIntegrationTest extends IntegrationTestSupport {
         mockMvc.perform(get("/api/rounds/{roundId}/fixtures", roundId)
                         .header("Authorization", "Bearer " + userToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[?(@.id == %d)].homeTeam".formatted(fixtureId)).value("FC Barcelona"));
+                .andExpect(jsonPath("$[?(@.id == %d)].homeTeam.name".formatted(fixtureId)).value("FC Barcelona"));
 
         mockMvc.perform(put("/api/admin/fixtures/{id}/result", fixtureId)
                         .header("Authorization", "Bearer " + adminToken)

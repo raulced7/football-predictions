@@ -5,6 +5,7 @@ import com.raulcedroj.football_predictions.sync.footballdata.FootballDataMatches
 import com.raulcedroj.football_predictions.sync.footballdata.FootballDataMatchesResponse.ScoreLine;
 import com.raulcedroj.football_predictions.sync.footballdata.FootballDataMatchesResponse.Team;
 import com.raulcedroj.football_predictions.sync.provider.ExternalMatch;
+import com.raulcedroj.football_predictions.sync.provider.ExternalTeam;
 import com.raulcedroj.football_predictions.sync.provider.FootballDataProvider;
 import com.raulcedroj.football_predictions.sync.provider.ProviderUnavailableException;
 import org.slf4j.Logger;
@@ -69,8 +70,10 @@ public class FootballDataOrgProvider implements FootballDataProvider {
 
     private Optional<ExternalMatch> toExternalMatch(Match match) {
         MappedStatus status = mapStatus(match.status());
+        ExternalTeam homeTeam = toExternalTeam(match.homeTeam());
+        ExternalTeam awayTeam = toExternalTeam(match.awayTeam());
         if (status == null || match.matchday() == null || match.utcDate() == null
-                || teamName(match.homeTeam()) == null || teamName(match.awayTeam()) == null) {
+                || homeTeam == null || awayTeam == null) {
             log.warn("Skipping match {} with unsupported data (status={}, matchday={})",
                     match.id(), match.status(), match.matchday());
             return Optional.empty();
@@ -85,8 +88,8 @@ public class FootballDataOrgProvider implements FootballDataProvider {
                 match.utcDate(),
                 status.kickoffConfirmed(),
                 status.status(),
-                teamName(match.homeTeam()),
-                teamName(match.awayTeam()),
+                homeTeam,
+                awayTeam,
                 score == null ? null : score.home(),
                 score == null ? null : score.away()));
     }
@@ -108,11 +111,21 @@ public class FootballDataOrgProvider implements FootballDataProvider {
         };
     }
 
-    private static String teamName(Team team) {
-        if (team == null) {
+    /** Sin id o sin nombre no podemos identificar al equipo (por ejemplo, un cruce aún por decidir). */
+    private static ExternalTeam toExternalTeam(Team team) {
+        if (team == null || team.id() == null || !StringUtils.hasText(team.name())) {
             return null;
         }
-        return StringUtils.hasText(team.shortName()) ? team.shortName() : team.name();
+        return new ExternalTeam(
+                String.valueOf(team.id()),
+                team.name().trim(),
+                textOrNull(team.shortName()),
+                textOrNull(team.tla()),
+                textOrNull(team.crest()));
+    }
+
+    private static String textOrNull(String value) {
+        return StringUtils.hasText(value) ? value.trim() : null;
     }
 
     private static ClientHttpRequestFactory requestFactory(FootballDataProperties properties) {

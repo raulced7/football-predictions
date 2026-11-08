@@ -8,6 +8,8 @@ import com.raulcedroj.football_predictions.fixture.dto.CreateFixtureRequest;
 import com.raulcedroj.football_predictions.fixture.dto.FixtureResponse;
 import com.raulcedroj.football_predictions.fixture.dto.ScheduleFixtureRequest;
 import com.raulcedroj.football_predictions.fixture.dto.SetResultRequest;
+import com.raulcedroj.football_predictions.team.TeamEntity;
+import com.raulcedroj.football_predictions.team.TeamService;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,14 +26,16 @@ public class FixtureService {
     private final ApplicationEventPublisher eventPublisher;
     private final Clock clock;
     private final ScoringRoundResolver scoringRoundResolver;
+    private final TeamService teamService;
 
     public FixtureService(FixtureRepository fixtureRepository, RoundRepository roundRepository, ApplicationEventPublisher eventPublisher,
-                          Clock clock, ScoringRoundResolver scoringRoundResolver) {
+                          Clock clock, ScoringRoundResolver scoringRoundResolver, TeamService teamService) {
         this.fixtureRepository = fixtureRepository;
         this.roundRepository = roundRepository;
         this.eventPublisher = eventPublisher;
         this.clock = clock;
         this.scoringRoundResolver = scoringRoundResolver;
+        this.teamService = teamService;
     }
 
     @Transactional
@@ -42,8 +46,10 @@ public class FixtureService {
         RoundEntity round = roundRepository.findById(request.roundId())
                 .orElseThrow(() -> new NotFoundException("No existe la jornada " + request.roundId()));
 
-        FixtureEntity fixture = fixtureRepository.save(new FixtureEntity(round,
-                request.homeTeam().trim(), request.awayTeam().trim(),
+        TeamEntity homeTeam = teamService.findOrCreate(request.homeTeam());
+        TeamEntity awayTeam = teamService.findOrCreate(request.awayTeam());
+
+        FixtureEntity fixture = fixtureRepository.save(new FixtureEntity(round, homeTeam, awayTeam,
                 request.kickoffAt(), request.kickoffConfirmed()));
 
         roundRepository.recomputeStarts(round.getSeason().getId());

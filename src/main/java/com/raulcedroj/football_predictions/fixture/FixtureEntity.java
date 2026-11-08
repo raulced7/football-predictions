@@ -2,6 +2,7 @@ package com.raulcedroj.football_predictions.fixture;
 
 import com.raulcedroj.football_predictions.common.exception.BusinessRuleException;
 import com.raulcedroj.football_predictions.competition.RoundEntity;
+import com.raulcedroj.football_predictions.team.TeamEntity;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
@@ -24,11 +25,13 @@ public class FixtureEntity {
     @JoinColumn(name = "scoring_round_id")
     private RoundEntity scoringRound;
 
-    @Column(name = "home_team", nullable = false, length = 100)
-    private String homeTeam;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "home_team_id")
+    private TeamEntity homeTeam;
 
-    @Column(name = "away_team", nullable = false, length = 100)
-    private String awayTeam;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "away_team_id")
+    private TeamEntity awayTeam;
 
     @Column(name = "kickoff_at", nullable = false)
     private Instant kickoffAt;
@@ -54,7 +57,7 @@ public class FixtureEntity {
     protected FixtureEntity() {
     }
 
-    public FixtureEntity(RoundEntity round, String homeTeam, String awayTeam,
+    public FixtureEntity(RoundEntity round, TeamEntity homeTeam, TeamEntity awayTeam,
                          Instant kickoffAt, boolean kickoffConfirmed) {
         this.round = round;
         this.scoringRound = round;
@@ -65,7 +68,7 @@ public class FixtureEntity {
         this.status = FixtureStatus.SCHEDULED;
     }
 
-    public FixtureEntity(RoundEntity round, String homeTeam, String awayTeam,
+    public FixtureEntity(RoundEntity round, TeamEntity homeTeam, TeamEntity awayTeam,
                          Instant kickoffAt, boolean kickoffConfirmed, String externalId) {
         this(round, homeTeam, awayTeam, kickoffAt, kickoffConfirmed);
         this.externalId = externalId;
@@ -151,8 +154,8 @@ public class FixtureEntity {
     public Long getId() { return id; }
     public RoundEntity getRound() { return round; }
     public RoundEntity getScoringRound() { return scoringRound; }
-    public String getHomeTeam() { return homeTeam; }
-    public String getAwayTeam() { return awayTeam; }
+    public TeamEntity getHomeTeam() { return homeTeam; }
+    public TeamEntity getAwayTeam() { return awayTeam; }
     public Instant getKickoffAt() { return kickoffAt; }
     public boolean isKickoffConfirmed() { return kickoffConfirmed; }
     public FixtureStatus getStatus() { return status; }

@@ -9,8 +9,8 @@ public record ExternalMatch(
         Instant kickoffAt,
         boolean kickoffConfirmed,
         FixtureStatus status,
-        String homeTeam,
-        String awayTeam,
+        ExternalTeam homeTeam,
+        ExternalTeam awayTeam,
         Integer homeGoals,
         Integer awayGoals
 ) {

@@ -13,7 +13,7 @@ record FootballDataMatchesResponse(List<Match> matches) {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    record Team(String name, String shortName) {
+    record Team(Long id, String name, String shortName, String tla, String crest) {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
