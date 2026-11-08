@@ -91,12 +91,8 @@ public class FixtureService {
         RoundEntity officialRound = fixture.getRound();
         Long seasonId = officialRound.getSeason().getId();
 
-        Long scoringRoundId = fixtureRepository.findScoringRoundIdFor(
-                        seasonId, officialRound.getSequence(), request.kickoffAt())
-                .orElse(officialRound.getId());
-
         fixture.reschedule(request.kickoffAt(), request.kickoffConfirmed(),
-                scoringRoundResolver.resolve(fixture.getRound(), request.kickoffAt()));
+                scoringRoundResolver.resolve(officialRound, request.kickoffAt()));
 
         roundRepository.recomputeStarts(seasonId);
         return FixtureResponse.from(fixture);
