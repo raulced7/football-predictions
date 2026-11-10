@@ -9,6 +9,9 @@ app:
   jwt:
     # Sin valor por defecto: si falta JWT_SECRET, la aplicación no arranca
     secret: ${JWT_SECRET}
+  mail:
+    # Sin valor por defecto: en producción los correos tienen que enviarse de verdad
+    resend-api-key: ${RESEND_API_KEY}
 
 # La documentación de la API solo se publica en local
 springdoc:

@@ -1,7 +1,9 @@
 package com.raulcedroj.football_predictions.common;
 
+import com.raulcedroj.football_predictions.auth.code.InvalidCodeException;
 import com.raulcedroj.football_predictions.auth.exception.DisplayNameTakenException;
 import com.raulcedroj.football_predictions.auth.exception.EmailAlreadyRegisteredException;
+import com.raulcedroj.football_predictions.auth.exception.EmailNotVerifiedException;
 import com.raulcedroj.football_predictions.auth.exception.InvalidCredentialsException;
 import com.raulcedroj.football_predictions.common.exception.BusinessRuleException;
 import com.raulcedroj.football_predictions.common.exception.ForbiddenException;
@@ -62,6 +64,22 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     public ProblemDetail handleDisplayNameTaken(DisplayNameTakenException ex) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
         problem.setTitle("Display name already taken");
+        return problem;
+    }
+
+    /** El front reconoce este caso por {@code code} y lleva al usuario a la pantalla del código. */
+    @ExceptionHandler(EmailNotVerifiedException.class)
+    public ProblemDetail handleEmailNotVerified(EmailNotVerifiedException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, ex.getMessage());
+        problem.setTitle("Email not verified");
+        problem.setProperty("code", "EMAIL_NOT_VERIFIED");
+        return problem;
+    }
+
+    @ExceptionHandler(InvalidCodeException.class)
+    public ProblemDetail handleInvalidCode(InvalidCodeException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+        problem.setTitle("Invalid code");
         return problem;
     }
 }

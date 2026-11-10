@@ -27,6 +27,9 @@ public class UserEntity {
     @Column(nullable = false, length = 20)
     private Role role = Role.USER;
 
+    @Column(name = "email_verified_at")
+    private Instant emailVerifiedAt;
+
     protected UserEntity() {
     }
 
@@ -43,4 +46,11 @@ public class UserEntity {
     public String getPasswordHash() { return passwordHash; }
     public Instant getCreatedAt() { return createdAt; }
     public Role getRole() { return role; }
+    public boolean isEmailVerified() { return emailVerifiedAt != null; }
+
+    public void markEmailVerified(Instant now) {
+        if (emailVerifiedAt == null) {
+            emailVerifiedAt = now;
+        }
+    }
 }

@@ -28,3 +28,6 @@ app:
     enabled: true
     calendar-cron: "0 30 4 * * *"
     live-check-interval: PT5M
+  mail:
+    from: "Golify <no-reply@golifyapp.com>"
+    resend-api-key: ${RESEND_API_KEY:}

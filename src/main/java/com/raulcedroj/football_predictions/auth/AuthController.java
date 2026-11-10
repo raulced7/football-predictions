@@ -1,9 +1,6 @@
 package com.raulcedroj.football_predictions.auth;
 
-import com.raulcedroj.football_predictions.auth.dto.DisplayNameAvailability;
-import com.raulcedroj.football_predictions.auth.dto.LoginRequest;
-import com.raulcedroj.football_predictions.auth.dto.RegisterRequest;
-import com.raulcedroj.football_predictions.auth.dto.TokenResponse;
+import com.raulcedroj.football_predictions.auth.dto.*;
 import com.raulcedroj.football_predictions.user.dto.*;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -32,6 +29,17 @@ public class AuthController {
     @PostMapping("/login")
     public TokenResponse login(@Valid @RequestBody LoginRequest request) {
         return authService.login(request);
+    }
+
+    @PostMapping("/verify-email")
+    public TokenResponse verifyEmail(@Valid @RequestBody VerifyEmailRequest request) {
+        return authService.verifyEmail(request);
+    }
+
+    @PostMapping("/verify-email/resend")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public void resendVerificationCode(@Valid @RequestBody ResendCodeRequest request) {
+        authService.resendVerificationCode(request);
     }
 
     @GetMapping("/display-name-availability")

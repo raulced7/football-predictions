@@ -8,6 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -22,11 +23,16 @@ class AuthIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
     @Test
     void registersLogsInAndAccessesProtectedEndpoint() throws Exception {
         register("raul@example.com", "Raúl", "password123")
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.email").value("raul@example.com"));
+
+        jdbcTemplate.update("UPDATE app_user SET email_verified_at = now() WHERE email = ?", "raul@example.com");
 
         String token = login("RAUL@example.com", "password123");
 

@@ -39,6 +39,9 @@ public abstract class IntegrationTestSupport {
                                 """.formatted(email, displayName)))
                 .andExpect(status().isCreated());
 
+        // Los tests no necesitan el correo: el email se da por verificado directamente
+        jdbcTemplate.update("UPDATE app_user SET email_verified_at = now() WHERE email = ?", email);
+
         if (admin) {
             jdbcTemplate.update("UPDATE app_user SET role = 'ADMIN' WHERE email = ?", email);
         }
