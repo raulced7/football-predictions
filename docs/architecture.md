@@ -8,7 +8,8 @@ The code is organized **by feature**: each package contains its own controller, 
 
 ```
 src/main/java/com/raulcedroj/football_predictions
-├── auth          # Registration, login, JWT issuing
+├── auth          # Registration, login, JWT issuing, email codes (verification, password reset)
+├── email         # Email sending: Resend API in production, log output locally
 ├── common        # Global error handling, clock, scheduling and OpenAPI config
 ├── competition   # Competitions, seasons, rounds and round start dates
 ├── fixture       # Fixtures, lifecycle transitions, scoring-round rule, admin endpoints
@@ -77,7 +78,8 @@ Interactive documentation: `http://localhost:8080/swagger-ui.html`.
 
 | Area | Endpoints |
 |---|---|
-| Auth | `POST /api/auth/register` · `POST /api/auth/login` · `GET /api/users/me` |
+| Auth | `POST /api/auth/register` · `POST /api/auth/verify-email` · `POST /api/auth/verify-email/resend` · `POST /api/auth/login` · `POST /api/auth/password-reset` · `POST /api/auth/password-reset/confirm` |
+| Users | `GET /api/users/me` · `PUT /api/users/me/password` |
 | Seasons | `GET /api/seasons` · `GET /api/seasons/{id}/rounds` |
 | Fixtures | `GET /api/rounds/{roundId}/fixtures` |
 | Predictions | `PUT /api/fixtures/{fixtureId}/prediction` · `GET /api/rounds/{roundId}/predictions/me` |

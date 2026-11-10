@@ -22,7 +22,7 @@ or can be deleted by its owner. A new group is created for the next season.
 | Missing prediction | 0 points |
 | Tie-break | More exact scores first; if still tied, players share the position |
 | Other members' predictions | Revealed only once the match has started; before that, only the number of predictions is shown |
-| Joining mid-season | Starts with 0 points; previous rounds simply have no predictions |
+| Joining mid-season | Predictions are per user, not per group: everything predicted earlier in the season counts. Someone who never predicted before starts with 0 points |
 
 ## Groups
 

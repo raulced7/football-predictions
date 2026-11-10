@@ -4,14 +4,12 @@ import com.raulcedroj.football_predictions.auth.code.CodePurpose;
 import com.raulcedroj.football_predictions.auth.code.EmailCodeService;
 import com.raulcedroj.football_predictions.auth.code.InvalidCodeException;
 import com.raulcedroj.football_predictions.auth.dto.*;
-import com.raulcedroj.football_predictions.auth.exception.DisplayNameTakenException;
-import com.raulcedroj.football_predictions.auth.exception.EmailNotVerifiedException;
+import com.raulcedroj.football_predictions.auth.exception.*;
+import com.raulcedroj.football_predictions.common.exception.NotFoundException;
 import com.raulcedroj.football_predictions.security.JwtProperties;
 import com.raulcedroj.football_predictions.security.TokenService;
 import com.raulcedroj.football_predictions.user.UserEntity;
 import com.raulcedroj.football_predictions.user.UserRepository;
-import com.raulcedroj.football_predictions.auth.exception.EmailAlreadyRegisteredException;
-import com.raulcedroj.football_predictions.auth.exception.InvalidCredentialsException;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -95,8 +93,12 @@ public class AuthService {
     }
 
     private void sendVerificationCode(UserEntity user) {
-        String code = emailCodeService.issue(user.getId(), CodePurpose.EMAIL_VERIFICATION);
-        events.publishEvent(new VerificationCodeIssuedEvent(user.getEmail(), user.getDisplayName(), code));
+        sendCode(user, CodePurpose.EMAIL_VERIFICATION);
+    }
+
+    private void sendCode(UserEntity user, CodePurpose purpose) {
+        String code = emailCodeService.issue(user.getId(), purpose);
+        events.publishEvent(new EmailCodeIssuedEvent(user.getEmail(), user.getDisplayName(), code, purpose));
     }
 
     @Transactional(noRollbackFor = InvalidCodeException.class)
@@ -116,6 +118,41 @@ public class AuthService {
                 .filter(user -> !user.isEmailVerified())
                 .filter(user -> emailCodeService.canIssue(user.getId(), CodePurpose.EMAIL_VERIFICATION))
                 .ifPresent(this::sendVerificationCode);
+    }
+
+    /**
+     * Igual que el reenvío del código de verificación: responde siempre lo mismo, exista o no la cuenta.
+     */
+    @Transactional
+    public void requestPasswordReset(PasswordResetRequest request) {
+        userRepository.findByEmail(normalizeEmail(request.email()))
+                .filter(user -> emailCodeService.canIssue(user.getId(), CodePurpose.PASSWORD_RESET))
+                .ifPresent(user -> sendCode(user, CodePurpose.PASSWORD_RESET));
+    }
+
+    /**
+     * Cambia la contraseña y devuelve el token, para entrar directamente. Si la cuenta no estaba
+     * verificada, ahora lo está: el código llegó a su correo, así que el email es suyo.
+     */
+    @Transactional(noRollbackFor = InvalidCodeException.class)
+    public TokenResponse confirmPasswordReset(PasswordResetConfirmRequest request) {
+        UserEntity user = userRepository.findByEmail(normalizeEmail(request.email()))
+                .orElseThrow(() -> new InvalidCodeException("El código no es válido. Pide uno nuevo."));
+
+        emailCodeService.consume(user.getId(), CodePurpose.PASSWORD_RESET, request.code());
+        user.changePassword(passwordEncoder.encode(request.newPassword()));
+        user.markEmailVerified(clock.instant());
+        return createToken(user);
+    }
+
+    @Transactional
+    public void changePassword(Long userId, String currentPassword, String newPassword) {
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Usuario no encontrado"));
+        if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
+            throw new WrongCurrentPasswordException();
+        }
+        user.changePassword(passwordEncoder.encode(newPassword));
     }
 
     private TokenResponse createToken(UserEntity user) {

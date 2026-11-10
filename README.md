@@ -12,6 +12,7 @@ match and compete in season and round standings. Fixtures and results are synchr
 ## Features
 
 - **JWT authentication** with Spring Security, BCrypt passwords and `USER` / `ADMIN` roles
+- **Email verification and password reset** with 6-digit codes: hashed, expiring, limited attempts and resend cooldown, sent through Resend after the transaction commits
 - **Friend groups** with invite codes, one competition season per group
 - **Predictions** editable until kick-off, hidden from other members until the match starts
 - **Automatic scoring** (3 points exact score, 1 correct outcome), recalculated if a result is corrected
@@ -73,7 +74,7 @@ export FOOTBALL_DATA_TOKEN=your-token   # Windows: set it in your IDE run config
 
 PostgreSQL starts automatically with Docker Compose, and Flyway seeds LaLiga 2026/27.
 
-1. Register and log in: `POST /api/auth/register`, `POST /api/auth/login`.
+1. Register (`POST /api/auth/register`), copy the 6-digit code from the application log (locally, emails are only logged) and verify it with `POST /api/auth/verify-email`.
 2. Promote your user to admin:
    ```bash
    docker compose exec postgres psql -U predictions -d predictions \

@@ -48,6 +48,10 @@ public class UserEntity {
     public Role getRole() { return role; }
     public boolean isEmailVerified() { return emailVerifiedAt != null; }
 
+    public void changePassword(String passwordHash) {
+        this.passwordHash = passwordHash;
+    }
+
     public void markEmailVerified(Instant now) {
         if (emailVerifiedAt == null) {
             emailVerifiedAt = now;

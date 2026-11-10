@@ -1,10 +1,7 @@
 package com.raulcedroj.football_predictions.common;
 
 import com.raulcedroj.football_predictions.auth.code.InvalidCodeException;
-import com.raulcedroj.football_predictions.auth.exception.DisplayNameTakenException;
-import com.raulcedroj.football_predictions.auth.exception.EmailAlreadyRegisteredException;
-import com.raulcedroj.football_predictions.auth.exception.EmailNotVerifiedException;
-import com.raulcedroj.football_predictions.auth.exception.InvalidCredentialsException;
+import com.raulcedroj.football_predictions.auth.exception.*;
 import com.raulcedroj.football_predictions.common.exception.BusinessRuleException;
 import com.raulcedroj.football_predictions.common.exception.ForbiddenException;
 import com.raulcedroj.football_predictions.common.exception.NotFoundException;
@@ -80,6 +77,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     public ProblemDetail handleInvalidCode(InvalidCodeException ex) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
         problem.setTitle("Invalid code");
+        return problem;
+    }
+
+    @ExceptionHandler(WrongCurrentPasswordException.class)
+    public ProblemDetail handleWrongCurrentPassword(WrongCurrentPasswordException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+        problem.setTitle("Wrong current password");
         return problem;
     }
 }

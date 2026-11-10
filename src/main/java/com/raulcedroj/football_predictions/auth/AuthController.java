@@ -42,6 +42,17 @@ public class AuthController {
         authService.resendVerificationCode(request);
     }
 
+    @PostMapping("/password-reset")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public void requestPasswordReset(@Valid @RequestBody PasswordResetRequest request) {
+        authService.requestPasswordReset(request);
+    }
+
+    @PostMapping("/password-reset/confirm")
+    public TokenResponse confirmPasswordReset(@Valid @RequestBody PasswordResetConfirmRequest request) {
+        return authService.confirmPasswordReset(request);
+    }
+
     @GetMapping("/display-name-availability")
     public DisplayNameAvailability displayNameAvailability(@RequestParam String name) {
         return new DisplayNameAvailability(authService.isDisplayNameAvailable(name));
