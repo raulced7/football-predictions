@@ -14,6 +14,8 @@ public interface FriendGroupRepository extends JpaRepository<FriendGroupEntity, 
 
     boolean existsByInviteCode(String inviteCode);
 
+    List<FriendGroupEntity> findByOwnerId(Long ownerId);
+
     long countByOwnerIdAndSeasonStatusNot(Long ownerId, SeasonStatus status);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)

@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 public interface FriendGroupMemberRepository extends JpaRepository<FriendGroupMemberEntity, Long> {
 
@@ -14,11 +15,15 @@ public interface FriendGroupMemberRepository extends JpaRepository<FriendGroupMe
 
     long countByFriendGroupId(Long friendGroupId);
 
+    /** El miembro más antiguo después del indicado: hereda el grupo si el dueño borra su cuenta. */
+    Optional<FriendGroupMemberEntity> findFirstByFriendGroupIdAndUserIdNotOrderByJoinedAtAsc(Long friendGroupId,
+                                                                                              Long userId);
+
     void deleteByFriendGroupIdAndUserId(Long friendGroupId, Long userId);
 
     @Query("""
             SELECT new com.raulcedroj.football_predictions.group.dto.GroupMemberResponse(
-                       u.id, u.displayName, m.joinedAt)
+                       u.id, u.displayName, u.avatarUrl, m.joinedAt)
             FROM FriendGroupMemberEntity m
             JOIN UserEntity u ON u.id = m.userId
             WHERE m.friendGroup.id = :groupId

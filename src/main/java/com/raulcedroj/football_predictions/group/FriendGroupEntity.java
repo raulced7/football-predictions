@@ -44,6 +44,10 @@ public class FriendGroupEntity {
         return ownerId.equals(userId);
     }
 
+    public void transferOwnershipTo(Long newOwnerId) {
+        this.ownerId = newOwnerId;
+    }
+
     public boolean isReadOnly() {
         return season.getStatus() == SeasonStatus.FINISHED;
     }

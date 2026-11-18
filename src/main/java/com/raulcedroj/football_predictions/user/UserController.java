@@ -2,6 +2,7 @@ package com.raulcedroj.football_predictions.user;
 
 import com.raulcedroj.football_predictions.auth.AuthService;
 import com.raulcedroj.football_predictions.user.dto.ChangePasswordRequest;
+import com.raulcedroj.football_predictions.user.dto.DeleteAccountRequest;
 import com.raulcedroj.football_predictions.user.dto.UserResponse;
 import com.raulcedroj.football_predictions.auth.exception.InvalidCredentialsException;
 import jakarta.validation.Valid;
@@ -16,10 +17,12 @@ public class UserController {
 
     private final UserRepository userRepository;
     private final AuthService authService;
+    private final AccountService accountService;
 
-    public UserController(UserRepository userRepository, AuthService authService) {
+    public UserController(UserRepository userRepository, AuthService authService, AccountService accountService) {
         this.userRepository = userRepository;
         this.authService = authService;
+        this.accountService = accountService;
     }
 
     @GetMapping("/me")
@@ -34,5 +37,11 @@ public class UserController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void changePassword(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody ChangePasswordRequest request) {
         authService.changePassword(Long.valueOf(jwt.getSubject()), request.currentPassword(), request.newPassword());
+    }
+
+    @DeleteMapping("/me")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteAccount(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody DeleteAccountRequest request) {
+        accountService.deleteAccount(Long.valueOf(jwt.getSubject()), request.password());
     }
 }

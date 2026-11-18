@@ -15,6 +15,7 @@ public class StandingsRepository {
     private static final String STANDINGS_SQL = """
             SELECT u.id           AS user_id,
                    u.display_name AS display_name,
+                   u.avatar_url   AS avatar_url,
                    COALESCE(SUM(p.points), 0)                           AS points,
                    COUNT(p.id) FILTER (WHERE p.points = :exactPoints)   AS exact_hits,
                    RANK() OVER (ORDER BY COALESCE(SUM(p.points), 0) DESC,
@@ -29,7 +30,7 @@ public class StandingsRepository {
                   AND r.season_id = g.season_id
                   %s
             WHERE g.id = :groupId
-            GROUP BY u.id, u.display_name
+            GROUP BY u.id, u.display_name, u.avatar_url
             ORDER BY position, u.display_name
             """;
 
@@ -48,6 +49,7 @@ public class StandingsRepository {
             rs.getInt("position"),
             rs.getLong("user_id"),
             rs.getString("display_name"),
+            rs.getString("avatar_url"),
             rs.getInt("points"),
             rs.getInt("exact_hits"));
 

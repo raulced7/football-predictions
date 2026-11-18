@@ -9,6 +9,14 @@ app:
   jwt:
     # Sin valor por defecto: si falta JWT_SECRET, la aplicación no arranca
     secret: ${JWT_SECRET}
+  avatars:
+    # Sin valores por defecto: en producción las fotos tienen que ir a R2 (el disco de Railway se borra al desplegar)
+    public-base-url: ${AVATARS_PUBLIC_BASE_URL}
+    r2:
+      endpoint: ${AVATARS_R2_ENDPOINT}
+      bucket: ${AVATARS_R2_BUCKET}
+      access-key-id: ${AVATARS_R2_ACCESS_KEY_ID}
+      secret-access-key: ${AVATARS_R2_SECRET_ACCESS_KEY}
   mail:
     # Sin valor por defecto: en producción los correos tienen que enviarse de verdad
     resend-api-key: ${RESEND_API_KEY}

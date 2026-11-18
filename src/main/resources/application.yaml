@@ -1,6 +1,11 @@
 spring:
   application:
     name: football-predictions
+  servlet:
+    multipart:
+      # La app reduce la foto antes de subirla; esto es solo el límite de seguridad
+      max-file-size: 2MB
+      max-request-size: 2MB
   jpa:
     hibernate:
       ddl-auto: validate
@@ -28,6 +33,14 @@ app:
     enabled: true
     calendar-cron: "0 30 4 * * *"
     live-check-interval: PT5M
+  avatars:
+    # Sin R2 configurado (en local), las fotos se guardan en una carpeta temporal y las sirve el backend
+    public-base-url: ${AVATARS_PUBLIC_BASE_URL:}
+    r2:
+      endpoint: ${AVATARS_R2_ENDPOINT:}
+      bucket: ${AVATARS_R2_BUCKET:}
+      access-key-id: ${AVATARS_R2_ACCESS_KEY_ID:}
+      secret-access-key: ${AVATARS_R2_SECRET_ACCESS_KEY:}
   mail:
     from: "Golify <no-reply@golifyapp.com>"
     resend-api-key: ${RESEND_API_KEY:}

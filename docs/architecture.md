@@ -9,6 +9,7 @@ The code is organized **by feature**: each package contains its own controller, 
 ```
 src/main/java/com/raulcedroj/football_predictions
 ├── auth          # Registration, login, JWT issuing, email codes (verification, password reset)
+├── avatar        # Profile photos: image processing and storage (Cloudflare R2 in production, disk locally)
 ├── email         # Email sending: Resend API in production, log output locally
 ├── common        # Global error handling, clock, scheduling and OpenAPI config
 ├── competition   # Competitions, seasons, rounds and round start dates
@@ -19,7 +20,7 @@ src/main/java/com/raulcedroj/football_predictions
 ├── security      # Spring Security and JWT configuration
 ├── standings     # Standings and group predictions (SQL)
 ├── sync          # football-data.org adapter, sync service and scheduler
-└── user          # Users and roles
+└── user          # Users, roles, password change and account deletion
 ```
 
 - **`fixture`** owns the match lifecycle. When a match finishes or is cancelled it publishes a domain event;
@@ -79,16 +80,16 @@ Interactive documentation: `http://localhost:8080/swagger-ui.html`.
 | Area | Endpoints |
 |---|---|
 | Auth | `POST /api/auth/register` · `POST /api/auth/verify-email` · `POST /api/auth/verify-email/resend` · `POST /api/auth/login` · `POST /api/auth/password-reset` · `POST /api/auth/password-reset/confirm` |
-| Users | `GET /api/users/me` · `PUT /api/users/me/password` |
+| Users | `GET /api/users/me` · `PUT /api/users/me/password` · `DELETE /api/users/me` · `POST /api/users/me/avatar` · `DELETE /api/users/me/avatar` |
 | Seasons | `GET /api/seasons` · `GET /api/seasons/{id}/rounds` |
 | Fixtures | `GET /api/rounds/{roundId}/fixtures` |
 | Predictions | `PUT /api/fixtures/{fixtureId}/prediction` · `GET /api/rounds/{roundId}/predictions/me` |
 | Groups | `POST /api/groups` · `POST /api/groups/join` · `GET /api/groups` · `GET /api/groups/{id}` · `DELETE /api/groups/{id}/members/me` · `DELETE /api/groups/{id}` |
 | Standings | `GET /api/groups/{id}/standings` · `GET /api/groups/{id}/standings/rounds/{roundId}` · `GET /api/groups/{id}/rounds/{roundId}/predictions` |
-| Admin | `POST /api/admin/fixtures` · `PUT /api/admin/fixtures/{id}/result` · `POST /api/admin/fixtures/{id}/postpone` · `PUT /api/admin/fixtures/{id}/schedule` · `POST /api/admin/fixtures/{id}/suspend` · `POST /api/admin/fixtures/{id}/cancel` · `POST /api/admin/sync/seasons/{id}` |
+| Admin | `POST /api/admin/fixtures` · `PUT /api/admin/fixtures/{id}/result` · `POST /api/admin/fixtures/{id}/postpone` · `PUT /api/admin/fixtures/{id}/schedule` · `POST /api/admin/fixtures/{id}/suspend` · `POST /api/admin/fixtures/{id}/cancel` · `POST /api/admin/sync/seasons/{id}` · `DELETE /api/admin/users/{id}/avatar` |
 
 Errors follow RFC 9457 (`ProblemDetail`): `400` validation, `401` missing or invalid token, `403` forbidden,
-`404` not found (also for groups you are not a member of), `409` business rule violated, `503` provider unavailable.
+`404` not found (also for groups you are not a member of), `409` business rule violated, `413` upload too large, `503` provider unavailable.
 
 ## Synchronization with football-data.org
 

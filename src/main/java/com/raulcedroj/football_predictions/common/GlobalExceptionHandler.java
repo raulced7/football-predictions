@@ -2,6 +2,7 @@ package com.raulcedroj.football_predictions.common;
 
 import com.raulcedroj.football_predictions.auth.code.InvalidCodeException;
 import com.raulcedroj.football_predictions.auth.exception.*;
+import com.raulcedroj.football_predictions.avatar.InvalidImageException;
 import com.raulcedroj.football_predictions.common.exception.BusinessRuleException;
 import com.raulcedroj.football_predictions.common.exception.ForbiddenException;
 import com.raulcedroj.football_predictions.common.exception.NotFoundException;
@@ -26,6 +27,15 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     public ProblemDetail handleInvalidCredentials(InvalidCredentialsException ex) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, ex.getMessage());
         problem.setTitle("Invalid credentials");
+        return problem;
+    }
+
+    // El exceso de tamaño (MaxUploadSizeExceededException) ya lo convierte en un 413 ResponseEntityExceptionHandler
+
+    @ExceptionHandler(InvalidImageException.class)
+    public ProblemDetail handleInvalidImage(InvalidImageException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+        problem.setTitle("Invalid image");
         return problem;
     }
 

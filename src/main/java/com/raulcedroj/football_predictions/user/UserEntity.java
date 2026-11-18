@@ -30,6 +30,9 @@ public class UserEntity {
     @Column(name = "email_verified_at")
     private Instant emailVerifiedAt;
 
+    @Column(name = "avatar_url")
+    private String avatarUrl;
+
     protected UserEntity() {
     }
 
@@ -47,6 +50,12 @@ public class UserEntity {
     public Instant getCreatedAt() { return createdAt; }
     public Role getRole() { return role; }
     public boolean isEmailVerified() { return emailVerifiedAt != null; }
+
+    public String getAvatarUrl() { return avatarUrl; }
+
+    public void changeAvatarUrl(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
+    }
 
     public void changePassword(String passwordHash) {
         this.passwordHash = passwordHash;

@@ -82,6 +82,20 @@ slow provider never holds a database connection.
 **Polling only when needed.** The live job checks the local database first and calls the API only while
 provider-linked matches are in the play window.
 
+## Profile photos
+
+**The server re-encodes every photo.** Images are decoded, cropped to a square and saved as a 256 px JPEG, so
+what gets stored is always small, has a known format and carries no EXIF data (such as GPS location). Image size is
+checked before decoding to avoid huge images using up memory.
+
+**Files in object storage, only the URL in the database.** Photos go to Cloudflare R2 (S3-compatible, no egress
+fees) under a public custom domain, and each upload gets a new key, so browsers can cache them forever. The old
+file is deleted only after the transaction commits; if it rolls back, the new one is deleted instead.
+
+**Account deletion keeps groups alive.** A group belongs to its creator, so before deleting the user each owned
+group is transferred to its oldest remaining member, or deleted if the user was alone. Predictions and memberships
+are removed by database cascades.
+
 ## Edge cases found while testing
 
 - **Non-chronological test data** made a later round look "started" and captured rescheduled matches. This revealed
