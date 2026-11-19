@@ -15,6 +15,7 @@ src/main/java/com/raulcedroj/football_predictions
 ├── competition   # Competitions, seasons, rounds and round start dates
 ├── fixture       # Fixtures, lifecycle transitions, scoring-round rule, admin endpoints
 ├── group         # Friend groups, invite codes, membership rules
+├── notification  # Web Push: device subscriptions, encryption and VAPID signing, round reminders and summaries
 ├── prediction    # Predictions with upsert and kick-off deadline
 ├── scoring       # Scoring rules and event listeners
 ├── security      # Spring Security and JWT configuration
@@ -85,6 +86,7 @@ Interactive documentation: `http://localhost:8080/swagger-ui.html`.
 | Fixtures | `GET /api/rounds/{roundId}/fixtures` |
 | Predictions | `PUT /api/fixtures/{fixtureId}/prediction` · `GET /api/rounds/{roundId}/predictions/me` |
 | Groups | `POST /api/groups` · `POST /api/groups/join` · `GET /api/groups` · `GET /api/groups/{id}` · `DELETE /api/groups/{id}/members/me` · `DELETE /api/groups/{id}` |
+| Push notifications | `GET /api/push/config` · `PUT /api/push/subscriptions` · `DELETE /api/push/subscriptions` |
 | Standings | `GET /api/groups/{id}/standings` · `GET /api/groups/{id}/standings/rounds/{roundId}` · `GET /api/groups/{id}/rounds/{roundId}/predictions` |
 | Admin | `POST /api/admin/fixtures` · `PUT /api/admin/fixtures/{id}/result` · `POST /api/admin/fixtures/{id}/postpone` · `PUT /api/admin/fixtures/{id}/schedule` · `POST /api/admin/fixtures/{id}/suspend` · `POST /api/admin/fixtures/{id}/cancel` · `POST /api/admin/sync/seasons/{id}` · `DELETE /api/admin/users/{id}/avatar` |
 

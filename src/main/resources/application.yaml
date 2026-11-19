@@ -41,6 +41,15 @@ app:
       bucket: ${AVATARS_R2_BUCKET:}
       access-key-id: ${AVATARS_R2_ACCESS_KEY_ID:}
       secret-access-key: ${AVATARS_R2_SECRET_ACCESS_KEY:}
+  push:
+    # Sin claves VAPID (en local), los avisos están desactivados y la app no los ofrece.
+    # Se generan una vez con: npx web-push generate-vapid-keys
+    public-key: ${PUSH_VAPID_PUBLIC_KEY:}
+    private-key: ${PUSH_VAPID_PRIVATE_KEY:}
+    subject: "mailto:hola@golifyapp.com"
+    reminder-lead: PT3H
+    summary-lookback: P3D
+    check-interval: PT10M
   mail:
     from: "Golify <no-reply@golifyapp.com>"
     resend-api-key: ${RESEND_API_KEY:}

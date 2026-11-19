@@ -6,6 +6,7 @@ import com.raulcedroj.football_predictions.avatar.InvalidImageException;
 import com.raulcedroj.football_predictions.common.exception.BusinessRuleException;
 import com.raulcedroj.football_predictions.common.exception.ForbiddenException;
 import com.raulcedroj.football_predictions.common.exception.NotFoundException;
+import com.raulcedroj.football_predictions.notification.InvalidPushSubscriptionException;
 import com.raulcedroj.football_predictions.sync.provider.ProviderUnavailableException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -36,6 +37,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     public ProblemDetail handleInvalidImage(InvalidImageException ex) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
         problem.setTitle("Invalid image");
+        return problem;
+    }
+
+    @ExceptionHandler(InvalidPushSubscriptionException.class)
+    public ProblemDetail handleInvalidPushSubscription(InvalidPushSubscriptionException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+        problem.setTitle("Invalid push subscription");
         return problem;
     }
 

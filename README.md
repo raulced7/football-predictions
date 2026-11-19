@@ -13,6 +13,7 @@ match and compete in season and round standings. Fixtures and results are synchr
 
 - **JWT authentication** with Spring Security, BCrypt passwords and `USER` / `ADMIN` roles
 - **Email verification and password reset** with 6-digit codes: hashed, expiring, limited attempts and resend cooldown, sent through Resend after the transaction commits
+- **Push notifications** with Web Push: a reminder before each round if you have matches left to predict, and a summary with your points and position when it ends. Encryption (RFC 8291) and VAPID signing (RFC 8292) implemented with the JDK, no extra libraries
 - **Friend groups** with invite codes, one competition season per group
 - **Predictions** editable until kick-off, hidden from other members until the match starts
 - **Automatic scoring** (3 points exact score, 1 correct outcome), recalculated if a result is corrected

@@ -96,6 +96,24 @@ file is deleted only after the transaction commits; if it rolls back, the new on
 group is transferred to its oldest remaining member, or deleted if the user was alone. Predictions and memberships
 are removed by database cascades.
 
+## Push notifications
+
+**Web Push implemented with the JDK.** The Java Web Push libraries are old or unmaintained, and the protocol only
+needs ECDH, HKDF, AES-GCM and ECDSA, which the JDK already has. The encryption is tested against the example in
+RFC 8291, so a mistake would be caught by the build.
+
+**One subscription per device, not per user.** A user can have notifications on their phone and their laptop.
+If someone else logs in on the same browser, the subscription moves to them; logging out removes it. When the push
+service answers `404`/`410` the subscription no longer exists and is deleted.
+
+**Only known push services.** The server sends requests to the URL the browser gives it, so only HTTPS URLs from
+Google, Apple, Mozilla and Microsoft push services are accepted. Otherwise the endpoint could be used to make the
+server call any address (SSRF).
+
+**Each notification is recorded before it is sent.** A row in `round_notification` (`ON CONFLICT DO NOTHING`)
+guarantees that a reminder or summary is never sent twice, even after a restart. Summaries only consider rounds
+played in the last few days, so turning the feature on does not send summaries of old rounds.
+
 ## Edge cases found while testing
 
 - **Non-chronological test data** made a later round look "started" and captured rescheduled matches. This revealed

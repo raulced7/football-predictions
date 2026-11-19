@@ -17,6 +17,10 @@ app:
       bucket: ${AVATARS_R2_BUCKET}
       access-key-id: ${AVATARS_R2_ACCESS_KEY_ID}
       secret-access-key: ${AVATARS_R2_SECRET_ACCESS_KEY}
+  push:
+    # Sin valores por defecto: en producción los avisos tienen que estar activados
+    public-key: ${PUSH_VAPID_PUBLIC_KEY}
+    private-key: ${PUSH_VAPID_PRIVATE_KEY}
   mail:
     # Sin valor por defecto: en producción los correos tienen que enviarse de verdad
     resend-api-key: ${RESEND_API_KEY}
