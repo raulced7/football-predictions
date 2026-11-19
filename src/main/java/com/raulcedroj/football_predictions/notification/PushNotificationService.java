@@ -1,7 +1,9 @@
 package com.raulcedroj.football_predictions.notification;
 
+import com.raulcedroj.football_predictions.notification.dto.PushBroadcastResponse;
 import org.springframework.stereotype.Service;
 import java.time.Duration;
+import java.util.List;
 
 @Service
 public class PushNotificationService {
@@ -27,6 +29,18 @@ public class PushNotificationService {
             }
         }
         return sent;
+    }
+
+    /** A todos los dispositivos suscritos de todos los usuarios. */
+    public PushBroadcastResponse sendToAll(PushMessage message, Duration timeToLive) {
+        List<PushSubscriptionEntity> subscriptions = subscriptionRepository.findAll();
+        int sent = 0;
+        for (PushSubscriptionEntity subscription : subscriptions) {
+            if (send(subscription, message, timeToLive)) {
+                sent++;
+            }
+        }
+        return new PushBroadcastResponse(subscriptions.size(), sent);
     }
 
     public boolean send(PushSubscriptionEntity subscription, PushMessage message, Duration timeToLive) {

@@ -2,6 +2,7 @@ package com.raulcedroj.football_predictions.notification;
 
 import com.raulcedroj.football_predictions.notification.dto.PushConfigResponse;
 import com.raulcedroj.football_predictions.notification.dto.PushSubscriptionRequest;
+import com.raulcedroj.football_predictions.notification.dto.PushTestResponse;
 import com.raulcedroj.football_predictions.notification.dto.PushUnsubscribeRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -9,6 +10,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,6 +27,12 @@ public class PushController {
             "Te avisaremos antes de cada jornada si te falta algún pronóstico, y al acabar con tus puntos.",
             "/",
             "welcome");
+
+    private static final PushMessage TEST = new PushMessage(
+            "Notificación de prueba",
+            "Si ves esto, los avisos funcionan en este dispositivo.",
+            "/",
+            "test");
 
     private final PushSubscriptionService subscriptionService;
     private final PushNotificationService notificationService;
@@ -52,6 +60,13 @@ public class PushController {
         if (result.created() && notificationService.isEnabled()) {
             notificationService.send(result.subscription(), WELCOME, Duration.ofHours(1));
         }
+    }
+
+    /** Envía una notificación de prueba a los dispositivos del propio usuario. */
+    @PostMapping("/test")
+    public PushTestResponse test(@AuthenticationPrincipal Jwt jwt) {
+        int sent = notificationService.sendToUser(Long.valueOf(jwt.getSubject()), TEST, Duration.ofMinutes(10));
+        return new PushTestResponse(sent);
     }
 
     @DeleteMapping("/subscriptions")

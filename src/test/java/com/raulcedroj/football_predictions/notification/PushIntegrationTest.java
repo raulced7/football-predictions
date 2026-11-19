@@ -20,6 +20,7 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -188,6 +189,46 @@ class PushIntegrationTest extends IntegrationTestSupport {
 
         assertThat(roundNotifications.summarize(roundId)).isZero();
         assertThat(roundNotifications.roundsToSummarize(now)).doesNotContain(roundId);
+    }
+
+    @Test
+    void sendsATestNotificationToTheUsersOwnDevices() throws Exception {
+        String token = tokenFor("push-test@example.com", false);
+        String endpoint = endpoint("test");
+        subscribe(token, endpoint);
+        clearInvocations(sender);
+
+        mockMvc.perform(post("/api/push/test").header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.sent").value(1));
+
+        assertThat(messagesTo(endpoint)).extracting(PushMessage::tag).containsExactly("test");
+    }
+
+    @Test
+    void onlyAdminsCanSendToEveryone() throws Exception {
+        String admin = tokenFor("push-broadcast-admin@example.com", true);
+        String user = tokenFor("push-broadcast-user@example.com", false);
+        String endpoint = endpoint("broadcast");
+        subscribe(user, endpoint);
+        clearInvocations(sender);
+        String request = """
+                { "title": "Nueva temporada", "body": "Ya puedes pronosticar la jornada 1.", "url": "/" }
+                """;
+
+        mockMvc.perform(post("/api/admin/push/broadcast")
+                        .header("Authorization", "Bearer " + user)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(request))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(post("/api/admin/push/broadcast")
+                        .header("Authorization", "Bearer " + admin)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(request))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.sent").isNumber());
+
+        assertThat(messagesTo(endpoint)).extracting(PushMessage::title).containsExactly("Nueva temporada");
     }
 
     @Test

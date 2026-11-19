@@ -86,9 +86,9 @@ Interactive documentation: `http://localhost:8080/swagger-ui.html`.
 | Fixtures | `GET /api/rounds/{roundId}/fixtures` |
 | Predictions | `PUT /api/fixtures/{fixtureId}/prediction` · `GET /api/rounds/{roundId}/predictions/me` |
 | Groups | `POST /api/groups` · `POST /api/groups/join` · `GET /api/groups` · `GET /api/groups/{id}` · `DELETE /api/groups/{id}/members/me` · `DELETE /api/groups/{id}` |
-| Push notifications | `GET /api/push/config` · `PUT /api/push/subscriptions` · `DELETE /api/push/subscriptions` |
+| Push notifications | `GET /api/push/config` · `PUT /api/push/subscriptions` · `DELETE /api/push/subscriptions` · `POST /api/push/test` |
 | Standings | `GET /api/groups/{id}/standings` · `GET /api/groups/{id}/standings/rounds/{roundId}` · `GET /api/groups/{id}/rounds/{roundId}/predictions` |
-| Admin | `POST /api/admin/fixtures` · `PUT /api/admin/fixtures/{id}/result` · `POST /api/admin/fixtures/{id}/postpone` · `PUT /api/admin/fixtures/{id}/schedule` · `POST /api/admin/fixtures/{id}/suspend` · `POST /api/admin/fixtures/{id}/cancel` · `POST /api/admin/sync/seasons/{id}` · `DELETE /api/admin/users/{id}/avatar` |
+| Admin | `POST /api/admin/fixtures` · `PUT /api/admin/fixtures/{id}/result` · `POST /api/admin/fixtures/{id}/postpone` · `PUT /api/admin/fixtures/{id}/schedule` · `POST /api/admin/fixtures/{id}/suspend` · `POST /api/admin/fixtures/{id}/cancel` · `POST /api/admin/sync/seasons/{id}` · `DELETE /api/admin/users/{id}/avatar` · `POST /api/admin/push/broadcast` |
 
 Errors follow RFC 9457 (`ProblemDetail`): `400` validation, `401` missing or invalid token, `403` forbidden,
 `404` not found (also for groups you are not a member of), `409` business rule violated, `413` upload too large, `503` provider unavailable.
